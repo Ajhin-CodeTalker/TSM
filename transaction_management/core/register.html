@@ -1,0 +1,13 @@
+<!-- templates/core/register.html -->
+<!doctype html>
+<html>
+<head><title>Register</title></head>
+<body>
+<h1>Student Registration</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Register</button>
+</form>
+</body>
+</html>
