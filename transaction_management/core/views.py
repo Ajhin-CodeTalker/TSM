@@ -27,9 +27,9 @@ def register(request):
             document = request.FILES.get("document")
 
             #create inactive user
-            user = User.object.create_user(username=username, email=email, password=password, is_active=True)
+            user = User.objects.create_user(username=username, email=email, password=password, is_active=False)
             #attach profile
-            profile = user.profile
+            profile = Profile.objects.get(user=user)
             profile.student_number = student_number
             profile.course = course
             profile.year_level = year_level
@@ -55,8 +55,12 @@ def register(request):
             request.session["verify_user_id"] = user.id
             return redirect("code:verify_otp")
         
-        else:
-            form = StudentRegistrationForm()
+        # must return something if form is invalid
+        return render(request, "core/register.html", {"form": form})
+        
+    else:
+        form = StudentRegistrationForm()
+        #allows to always return a response (for GET or invalid type of form)
         return render(request, "core/register.html", {"form": form})
     
 def verify_otp(request):
