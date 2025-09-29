@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 import random
 from datetime import timedelta
+from django.db import IntegrityError
 
 
 def generate_otp_code(length=6):
@@ -21,15 +22,25 @@ def register(request):
             username = form.cleaned_data["username"]
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
+            first_name = form.cleaned_data["first_name"]
+            last_name = form.cleaned_data["last_name"]
             student_number = form.cleaned_data["student_number"]
             course = form.cleaned_data.get("course", "")
             year_level = form.cleaned_data.get("year_level", "")
             document = request.FILES.get("document")
 
             #create inactive user
-            user = User.objects.create_user(username=username, email=email, password=password, is_active=False)
+            user = User.objects.create_user(username=username, 
+                                            email=email, 
+                                            password=password,
+                                            first_name = first_name,
+                                            last_name = last_name, 
+                                            is_active=False,
+                                            )
+
             #attach profile
-            profile = Profile.objects.get(user=user)
+            profile = Profile.objects.get_or_create(user=user)
+
             profile.student_number = student_number
             profile.course = course
             profile.year_level = year_level
@@ -53,15 +64,14 @@ def register(request):
 
             # save username in session to be used by verify page
             request.session["verify_user_id"] = user.id
-            return redirect("code:verify_otp")
-        
-        # must return something if form is invalid
-        return render(request, "core/register.html", {"form": form})
+            return redirect("core:verify_otp")
+        else:
+            print("Form Errors:", form.errors)
         
     else:
         form = StudentRegistrationForm()
         #allows to always return a response (for GET or invalid type of form)
-        return render(request, "core/register.html", {"form": form})
+    return render(request, "core/register.html", {"form": form})
     
 def verify_otp(request):
     """ request session 
@@ -72,7 +82,7 @@ def verify_otp(request):
     """
     user_id = request.session.get("verify_user_id")
     if not user_id:
-        return redirect("code:register")
+        return redirect("core:register")
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
@@ -99,10 +109,10 @@ def verify_otp(request):
 
                     #log user in
                     login(request, user)
-                    return redirect("code:pending_approval")
+                    return redirect("core:pending_approval")
     else:
         form = OTPForm()
-    return render(request, "code/verify_otp.html", {"form": form, "email":user.email})
+    return render(request, "core/verify_otp.html", {"form": form, "email":user.email})
 
 
 
@@ -114,7 +124,7 @@ def pending_approval(request):
     """
 
     #after verification, show pending screen until registrar approves
-    return render(request, "code/pending_approval.html")
+    return render(request, "core/pending_approval.html")
 
 # registrar can view the list of pending verifications
 # but this will required the login for the staff
@@ -141,7 +151,7 @@ def approve_profile(request, profile_id):
         [profile.user.email],
         fail_silently=True,
     )
-    return redirect("code:approval_list")
+    return redirect("core:approval_list")
 
 @user_passes_test(staff_check)
 def reject_profile(request, profile_id):

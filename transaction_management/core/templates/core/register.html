@@ -8,6 +8,13 @@
 
     <h1 class="mb-4">Student Registration</h1>
 
+    <!-- Show any non-field errors (like password mismatch) -->
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
     <form method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
         {% csrf_token %}
 
@@ -15,14 +22,40 @@
         <div class="mb-3">
             {{ form.username.label_tag }}
             {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <!-- Email -->
         <div class="mb-3">
             {{ form.email.label_tag }}
             {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors|striptags }}</div>
+            {% endif %}
         </div>
 
+
+        <!-- First Name -->
+        <div class="mb-3">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="text-danger">{{ form.first_name.errors|striptags }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Last Name -->
+        <div class="mb-3">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="text-danger">{{ form.last_name.errors|striptags }}</div>
+            {% endif %}
+        </div>
+
+        
         <!-- Password with toggle -->
         <div class="mb-3 position-relative">
             {{ form.password.label_tag }}
@@ -30,6 +63,9 @@
                 {{ form.password }}
                 <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('id_password')">👁️</button>
             </div>
+            {% if form.password.errors %}
+                <div class="text-danger">{{ form.password.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <!-- Confirm Password with toggle -->
@@ -39,30 +75,45 @@
                 {{ form.confirm_password }}
                 <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('id_confirm_password')">👁️</button>
             </div>
+            {% if form.confirm_password.errors %}
+                <div class="text-danger">{{ form.confirm_password.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <!-- Course -->
         <div class="mb-3">
             {{ form.course.label_tag }}
             {{ form.course }}
+            {% if form.course.errors %}
+                <div class="text-danger">{{ form.course.errors|striptags }}</div>
+            {% endif %}
         </div>
 
-        <!-- Year Level (dropdown) -->
+        <!-- Year Level -->
         <div class="mb-3">
             {{ form.year_level.label_tag }}
             {{ form.year_level }}
+            {% if form.year_level.errors %}
+                <div class="text-danger">{{ form.year_level.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <!-- Document upload -->
         <div class="mb-3">
             {{ form.document.label_tag }}
             {{ form.document }}
+            {% if form.document.errors %}
+                <div class="text-danger">{{ form.document.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <!-- Student Number -->
         <div class="mb-3">
             {{ form.student_number.label_tag }}
             {{ form.student_number }}
+            {% if form.student_number.errors %}
+                <div class="text-danger">{{ form.student_number.errors|striptags }}</div>
+            {% endif %}
         </div>
 
         <button type="submit" class="btn btn-primary">Register</button>

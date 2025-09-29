@@ -17,13 +17,15 @@ class StudentRegistrationForm(forms.ModelForm):
     course = forms.CharField(max_length=100, required=True, label="Course") #course field
     year_level = forms.ChoiceField(choices=YEAR_LEVEL_CHOICES, required=True, label="Year Level") #year level field
     document = forms.FileField(required=True, label="Upload COR/ID") #uploading document
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=30)
 
 
     class Meta:
         model = User
         #including both user fields and custom field
-        #fields = ["username", "email", "password", "confirm_password", "course", "year_level", "document"]
-        fields = ["username", "email", "password"]
+        fields = ["username", "email", "first_name", "last_name","password", "confirm_password", "course", "year_level", "document"]
+        # fields = ["username", "email", "password"]
 
     #validating of registration 
     def clean(self):
@@ -42,6 +44,7 @@ class StudentRegistrationForm(forms.ModelForm):
             checking if the inputted student number is already registered to avoid multiple accounts
         """
         student_number = self.cleaned_data.get("student_number")
+        from .models import Profile
         if Profile.objects.filter(student_number=student_number).exists():
             raise forms.ValidationError("This student number is already registered")
         return student_number
