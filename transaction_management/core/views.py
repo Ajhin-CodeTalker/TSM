@@ -37,8 +37,27 @@ def register(request):
                                             last_name = last_name, 
                                             is_active=False,
                                             )
+            
+
+            # Attack Profile
+            # Allows for safer updating of the profile and only allowing to create once
+            Profile.objects.create(
+                user = user,
+                student_number = student_number,
+                course = course,
+                year_level = year_level,
+                document = document,
+                submitted_at = timezone.now(),
+                is_verified_email = False,
+                is_approved_by_registrar = False
+
+            )
+
+            """
+                # This line of code is at risk of having multiple integrity error if a profile is already existing with the same student number
 
             #attach profile
+           
             profile = Profile.objects.get_or_create(user=user)
 
             profile.student_number = student_number
@@ -49,7 +68,7 @@ def register(request):
             profile.is_verified_email = False
             profile.is_approved_by_registrar = False
             profile.save()
-
+            """
             # Create OTP
             code = generate_otp_code()
             expires = timezone.now() + timedelta(minutes=20)

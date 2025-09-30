@@ -121,3 +121,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+
+
+
+
+# EMAIL SETTINGS (DEVELOPMENT) -------------------------------
+# prints the email inside the terminal
+EMAIL_BACKEND = "django.core.mail.backends.consol.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@cvsu.edu.ph"

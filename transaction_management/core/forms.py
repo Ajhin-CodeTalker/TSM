@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
-
+from django.core.exceptions import ValidationError
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
     ("2nd Year", "2nd Year"),
@@ -38,6 +38,20 @@ class StudentRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Password Don't Match!!!")
         return cleaned
     
+
+    # This function allows to check the user inputted email address
+    def clean_email(self):
+        email = self.cleaned_data.get("email") # get the email of the user
+
+        # checking if the user put the expected extenstion of the campus given email
+        if not email.endswith("@cvsu.edu.ph"):
+            raise ValidationError("You must user your school email (@cvsu.edu.ph)")
+        
+        # checking if the user is already registered with that email, and will not be able to register again
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("This email is already registered")
+        return email
+
     #validating the unique student number
     def clean_student_number(self):
         """
