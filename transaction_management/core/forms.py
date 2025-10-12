@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 from django.core.exceptions import ValidationError
+from .models import Appointment
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
     ("2nd Year", "2nd Year"),
@@ -67,3 +68,13 @@ class StudentRegistrationForm(forms.ModelForm):
 class OTPForm(forms.Form):
     code = forms.CharField(max_length=6)
 
+
+# Creating the appointment form
+class AppointmentForms(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ["purpose", "appointment_date", "appointment_time"]
+        widgets = {
+            "appointment_date": forms.DateInput(attrs={"type": "date"}),
+            "appointment_time": forms.TimeInput(attrs={"type": "time"})
+        }

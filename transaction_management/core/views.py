@@ -9,7 +9,10 @@ from django.core.mail import send_mail
 import random
 from datetime import timedelta
 from django.db import IntegrityError
-
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .forms import AppointmentForms
+from django.contrib import messages
+from .models import Appointment
 
 def generate_otp_code(length=6):
     return "".join(str(random.randint(0,9)) for _ in range(length))
@@ -193,10 +196,61 @@ def reject_profile(request, profile_id):
     return redirect("core:approval_list")
 
 
+# helping the function to check if the user is staff
+def is_registrar(user):
+    return user.is_staff
+
+@login_required
+def student_appointments(request):
+    # Get all appointments for the logged-in student (or all if not filtered yet)
+    appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
+
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            appointment = form.save(commit=False)
+            # Optionally tie it to a student if you have a user relation
+            # appointment.student = request.user  
+            appointment.status = 'pending'
+            appointment.save()
+            messages.success(request, "Appointment booked successfully!")
+            return redirect('core:student_appointments')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = AppointmentForms()
+
+    # ✅ Always return an HttpResponse
+    return render(request, 'core/student_appointments.html', {
+        'form': form,
+        'appointments': appointments,
+    })
+
+@user_passes_test(is_registrar)
+def registrar_appointments(request):
+    appointments = Appointment.objects.all().order_by("-created_at")
+    return render(request, "core/registrar_appointments.html", {"appointments": appointments})
+
+
+@user_passes_test(is_registrar)
+def update_appointment_status(request, appointment_id, status):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    appointment.status = status
+    appointment.save()
+    messages.success(request, f"Appointment {status.lower()} successfully")
+    return redirect("registrar_appointments")
 
 
 
-"""
-CODE MONA UNG FOR URL'S
 
-"""
+
+
+
+
+
+
+
+
+
+
+
