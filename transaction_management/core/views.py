@@ -98,6 +98,9 @@ def register(request):
 def login_view(request):
     return render(request, 'core/login.html')
 
+def register(request):
+    return render(request, "core/register.html")
+
 def verify_otp(request):
     """ request session 
     
