@@ -95,6 +95,9 @@ def register(request):
         #allows to always return a response (for GET or invalid type of form)
     return render(request, "core/register.html", {"form": form})
     
+def login_view(request):
+    return render(request, 'core/login.html')
+
 def verify_otp(request):
     """ request session 
     

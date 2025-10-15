@@ -7,6 +7,7 @@ app_name = "core"
 
 urlpatterns = [
     path("register/", views.register, name="register"),
+    path("login/", views.login_view, name="login"),
     path("verify/", views.verify_otp, name="verify_otp"),
     path("pending/", views.pending_approval, name="pending_approval"),
     path("approvals/", views.approval_list, name="approval_list"),
