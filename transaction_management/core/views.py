@@ -212,7 +212,7 @@ def student_appointments(request):
     appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
 
     if request.method == 'POST':
-        form = AppointmentForm(request.POST)
+        form = AppointmentForms(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
             # Optionally tie it to a student if you have a user relation
@@ -246,7 +246,9 @@ def update_appointment_status(request, appointment_id, status):
     messages.success(request, f"Appointment {status.lower()} successfully")
     return redirect("registrar_appointments")
 
-
+@user_passes_test(is_registrar)
+def registrar_dashboard(request):
+    return render(request, "core/registrar_dashboard.html")
 
 
 
