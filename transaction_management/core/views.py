@@ -9,10 +9,12 @@ from django.core.mail import send_mail
 import random
 from datetime import timedelta
 from django.db import IntegrityError
-from django.contrib.auth.decorators import login_required, user_passes_test
+# from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import AppointmentForms
 from django.contrib import messages
-from .models import Appointment
+from .models import Appointment, Profile
+from django.utils import timezone
+from datetime import date
 
 def generate_otp_code(length=6):
     return "".join(str(random.randint(0,9)) for _ in range(length))
@@ -206,7 +208,7 @@ def reject_profile(request, profile_id):
 def is_registrar(user):
     return user.is_staff
 
-@login_required
+# @login_required
 def student_appointments(request):
     # Get all appointments for the logged-in student (or all if not filtered yet)
     appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
@@ -232,13 +234,13 @@ def student_appointments(request):
         'appointments': appointments,
     })
 
-@user_passes_test(is_registrar)
+# @user_passes_test(is_registrar)
 def registrar_appointments(request):
     appointments = Appointment.objects.all().order_by("-created_at")
     return render(request, "core/registrar_appointments.html", {"appointments": appointments})
 
 
-@user_passes_test(is_registrar)
+# @user_passes_test(is_registrar)
 def update_appointment_status(request, appointment_id, status):
     appointment = get_object_or_404(Appointment, id=appointment_id)
     appointment.status = status
@@ -246,9 +248,55 @@ def update_appointment_status(request, appointment_id, status):
     messages.success(request, f"Appointment {status.lower()} successfully")
     return redirect("registrar_appointments")
 
-@user_passes_test(is_registrar)
+
+
+# @user_passes_test(is_registrar)
 def registrar_dashboard(request):
-    return render(request, "core/registrar_dashboard.html")
+    today = date.today()
+    month_start = today.replace(day=1)
+
+    pending_profiles = Profile.objects.filter(
+        is_verified_email=True, is_approved_by_registrar=False
+    ).count()
+    processing_appointments = Appointment.objects.filter(status="Pending").count()
+    completed_today = Appointment.objects.filter(
+        status="Approved", appointment_date=today
+    ).count()
+    total_this_month = Appointment.objects.filter(
+        created_at__date__gte=month_start
+    ).count()
+
+    # Build recent activity list
+    recent_profiles = Profile.objects.order_by('-submitted_at')[:3]
+    recent_appointments = Appointment.objects.order_by('-created_at')[:3]
+
+    recent_activity = []
+
+    for p in recent_profiles:
+        recent_activity.append({
+            "type": "Profile",
+            "text": f"New student registered: {p.user.get_full_name()} (ID: {p.student_number})",
+            "time": p.submitted_at,
+        })
+    for a in recent_appointments:
+        recent_activity.append({
+            "type": "Appointment",
+            "text": f"{a.purpose} appointment from {a.student.username} ({a.status})",
+            "time": a.created_at,
+        })
+
+    # Sort both by most recent
+    recent_activity = sorted(recent_activity, key=lambda x: x["time"], reverse=True)[:5]
+
+    context = {
+        "pending_profiles": pending_profiles,
+        "processing_appointments": processing_appointments,
+        "completed_today": completed_today,
+        "total_this_month": total_this_month,
+        "recent_activity": recent_activity,
+    }
+
+    return render(request, "core/registrar_website.html", context)
 
 
 

@@ -1,3 +1,6 @@
+{% load static %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,7 +83,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Pending Requests</p>
-                            <p class="text-3xl font-bold text-gray-900">24</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ pending_profiles }}</p>
                         </div>
                         <div class="bg-yellow-100 p-3 rounded-full">
                             <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +97,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Processing</p>
-                            <p class="text-3xl font-bold text-gray-900">12</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ processing_appointments}}</p>
                         </div>
                         <div class="bg-blue-100 p-3 rounded-full">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +111,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Completed Today</p>
-                            <p class="text-3xl font-bold text-gray-900">8</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ completed_today }}</p>
                         </div>
                         <div class="bg-green-100 p-3 rounded-full">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +125,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">Total This Month</p>
-                            <p class="text-3xl font-bold text-gray-900">156</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ total_this_month}}</p>
                         </div>
                         <div class="bg-purple-100 p-3 rounded-full">
                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,6 +140,7 @@
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
                 <div class="space-y-4">
+                    {% for activity in recent_activity %}
                     <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                         <div class="bg-green-100 p-2 rounded-full">
                             <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,34 +148,12 @@
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">TOR completed for Juan Dela Cruz (ID: 2021-001234)</p>
-                            <p class="text-xs text-gray-500">2 minutes ago</p>
+                            <p class="text-sm font-medium text-gray-900">{{ activity.text }}</p>
+                            <p class="text-xs text-gray-500">{{ activity.time|date:"Y-m-d H:i" }} ago</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                        <div class="bg-blue-100 p-2 rounded-full">
-                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">New COR request from Maria Garcia (ID: 2022-005678)</p>
-                            <p class="text-xs text-gray-500">15 minutes ago</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                        <div class="bg-yellow-100 p-2 rounded-full">
-                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9"></path>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">COG request requires verification - Roberto Santos (ID: 2020-009876)</p>
-                            <p class="text-xs text-gray-500">1 hour ago</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    {% endfor %}
+                    <p class="text-gray-500 text-sm">No recent activity yet...</p>
         </div>
 
         <!-- Document Requests Tab -->
