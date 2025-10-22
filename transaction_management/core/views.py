@@ -213,12 +213,19 @@ def student_appointments(request):
     # Get all appointments for the logged-in student (or all if not filtered yet)
     appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
 
+    
+
     if request.method == 'POST':
         form = AppointmentForms(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
             # Optionally tie it to a student if you have a user relation
+            #this line allows to control the request ONLY when login
             # appointment.student = request.user  
+
+            #Allows dev to test ithout login yet
+            appointment.student = request.user if request.user.is_authenticated else None
+
             appointment.status = 'pending'
             appointment.save()
             messages.success(request, "Appointment booked successfully!")

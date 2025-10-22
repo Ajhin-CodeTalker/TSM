@@ -195,60 +195,38 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="requests-table">
+                            {% for appointment in appointments %}
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">REQ-2024-001</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-gray-900">Juan Dela Cruz</div>
-                                        <div class="text-sm text-gray-500">ID: 2021-001234</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ appointment.student.username }}</div>
+                                        <div class="text-sm text-gray-500">ID: {{ appointment.student.profile.student_number }}</div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Transcript of Records (TOR)</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Jan 15, 2024</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full status-processing">Processing</span>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ appointment.purpose }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ appointment.appointment_date}</td>
+                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                        {% if appointment.status == 'Pending' %}status-pending
+                                        {% elif appointment.status == 'Processing' %}status-processing
+                                        {% elif appointment.status == 'Approved' %}status-completed
+                                        {% elif appointment.status == 'Rejected' %}status-rejected
+                                        {% endif %}
+                                    ">
+                                        {{ appointment.status }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                    <button onclick="viewRequest('REQ-2024-001')" class="text-blue-600 hover:text-blue-900">View</button>
-                                    <button onclick="updateStatus('REQ-2024-001', 'completed')" class="text-green-600 hover:text-green-900">Complete</button>
+                                    <a href="{% url 'core:update_appointment_status' appointment.id 'Approved' %}" class="text-green-600 hover:text-green-900">Approve</a>
+                                    <a href="{% url 'core:update_appointment_status' appointment.id 'Rejected' %}" class="text-red-600 hover:text-red-900">Reject</a>
                                 </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">REQ-2024-002</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">Maria Garcia</div>
-                                        <div class="text-sm text-gray-500">ID: 2022-005678</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Certificate of Registration (COR)</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Jan 16, 2024</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full status-pending">Pending</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                    <button onclick="viewRequest('REQ-2024-002')" class="text-blue-600 hover:text-blue-900">View</button>
-                                    <button onclick="updateStatus('REQ-2024-002', 'processing')" class="text-yellow-600 hover:text-yellow-900">Process</button>
-                                </td>
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No appointments found</td>
                             </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">REQ-2024-003</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">Roberto Santos</div>
-                                        <div class="text-sm text-gray-500">ID: 2020-009876</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Certificate of Grades (COG)</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Jan 14, 2024</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full status-completed">Completed</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                    <button onclick="viewRequest('REQ-2024-003')" class="text-blue-600 hover:text-blue-900">View</button>
-                                    <button onclick="printDocument('REQ-2024-003')" class="text-purple-600 hover:text-purple-900">Print</button>
-                                </td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

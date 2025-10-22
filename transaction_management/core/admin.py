@@ -1,7 +1,7 @@
 # this is the adminstration 
 
 from django.contrib import admin
-from .models import Profile, OTP
+from .models import Profile, OTP, Appointment
 
 
 @admin.register(Profile)
@@ -21,3 +21,12 @@ class ProfileAdmin(admin.ModelAdmin):
     def get_email(self, obj):
         return obj.user.email
     get_email.short_description = "Email"
+
+
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    list_display = ('student', 'purpose', 'appointment_date', 'status', 'created_at')
+    list_filter = ('status', 'appointment_date')
+
+    def date(self, obj):
+        return obj.appointment_date.strftime('%Y-%m-%d')
