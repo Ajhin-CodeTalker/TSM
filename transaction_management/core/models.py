@@ -71,7 +71,6 @@ class CertificateRequest(models.Model):
         ('good_moral', 'Good Moral Certificate'),
         ('enrollment', 'Certificate of Enrollment'),
         ('registration_form', 'Registration Form'),
-        ('tor', 'Transcript of Records'),
         ('cog', 'Certificate of Grades'),
         ('diploma', 'Diploma'),
     ]
