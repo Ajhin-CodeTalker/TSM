@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from .models import Profile
 from django.core.exceptions import ValidationError
 from .models import Appointment
+from .models import CertificateRequest
+
+
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
     ("2nd Year", "2nd Year"),
@@ -77,4 +80,13 @@ class AppointmentForms(forms.ModelForm):
         widgets = {
             "appointment_date": forms.DateInput(attrs={"type": "date"}),
             "appointment_time": forms.TimeInput(attrs={"type": "time"})
+        }
+
+class CertificateRequestForm(forms.ModelForm):
+    class Meta:
+        model = CertificateRequest
+        fields = ['certificate_type', 'purpose', 'supporting_document']
+        widgets = {
+            'certificate_type': forms.Select(attrs={'class': 'form-control'}),
+            'purpose': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter purpose for this certificate.'}),
         }

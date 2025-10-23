@@ -17,4 +17,5 @@ urlpatterns = [
     path("registrar/appointments/", views.registrar_appointments, name="registrar_appointments"),
     path("registrar/appointments/update/<int:appointment_id>/<str:status>/", views.update_appointment_status, name="update_appointment_status"),
     path("registrar/dashboard/", views.registrar_dashboard, name='registrar_dashboard'),
+    path('certificates/', views.certificate_request_view, name='certificate_request'),
 ]

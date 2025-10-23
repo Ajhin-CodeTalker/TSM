@@ -1,7 +1,7 @@
 # this is the adminstration 
 
 from django.contrib import admin
-from .models import Profile, OTP, Appointment
+from .models import Profile, OTP, Appointment, CertificateRequest
 
 
 @admin.register(Profile)
@@ -30,3 +30,8 @@ class AppointmentAdmin(admin.ModelAdmin):
 
     def date(self, obj):
         return obj.appointment_date.strftime('%Y-%m-%d')
+    
+@admin.register(CertificateRequest)
+class CertificateRequestAdmin(admin.ModelAdmin):
+    list_display = ('student', 'certificate_type', 'status', 'requested_at')
+    list_filter = ('certificate_type', 'status')

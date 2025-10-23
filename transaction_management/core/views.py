@@ -15,6 +15,9 @@ from django.contrib import messages
 from .models import Appointment, Profile
 from django.utils import timezone
 from datetime import date
+from .forms import CertificateRequestForm
+from .models import CertificateRequest
+
 
 def generate_otp_code(length=6):
     return "".join(str(random.randint(0,9)) for _ in range(length))
@@ -210,36 +213,64 @@ def is_registrar(user):
 
 # @login_required
 def student_appointments(request):
+
+    user = request.user
+    today = date.today()
     # Get all appointments for the logged-in student (or all if not filtered yet)
     appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
 
+
+    #allows to check available schedules
+    available_times = [
+        "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
+        "1:00 PM", "2:00 PM", "3:00 PM",
+    ]
     
+    # booked out slows for selected date 
+    selected_date = request.POST.get('appointment_date', None)
+    booked_times = []
+    if selected_date:
+        booked_times = Appointment.objects.filter(
+            appointment_date = selected_date
+        ).values_list('appointment_time', flat=True)
 
     if request.method == 'POST':
         form = AppointmentForms(request.POST)
         if form.is_valid():
-            appointment = form.save(commit=False)
-            # Optionally tie it to a student if you have a user relation
-            #this line allows to control the request ONLY when login
-            # appointment.student = request.user  
+            appointment_date = form.cleaned_data['appointment_date']
+            appointment_time = form.cleaned_data['appointment_time']
 
-            #Allows dev to test ithout login yet
-            appointment.student = request.user if request.user.is_authenticated else None
+            # prvent from double booking by the same student
+            if Appointment.objects.filter(student=user, appointment_date=appointment_date).exists():
+                messages.error(request, "You already booked an appointment on this date")
+                return redirect('core:student_appointments')
 
-            appointment.status = 'pending'
-            appointment.save()
-            messages.success(request, "Appointment booked successfully!")
-            return redirect('core:student_appointments')
+            # prevent full schedule for the slow. ONLY allows limited slots
+            # only 10 ppl will be included to take appointment in that specific date
+            if Appointment.objects.filter(appointment_date=appointment_date).count() >= 10:
+                messages.error(request, "All appointment slots for this day are FULL!")
+                return redirect('core:student_appointments')
+            
+            else:
+                appointment = form.save(commit=False)
+                appointment.student = user
+                appointment.status = 'Pending'
+                appointment.save()
+                messages.success(request, "Appointment Booked Successfully!")
+                return redirect('core:student_appointments')
         else:
-            messages.error(request, "Please correct the errors below.")
+            messages.error(request, "Please coorect the errors below")
     else:
         form = AppointmentForms()
 
-    # ✅ Always return an HttpResponse
     return render(request, 'core/student_appointments.html', {
         'form': form,
         'appointments': appointments,
+        'available_times': available_times,
+        'booked_times': booked_times,
+
     })
+
 
 # @user_passes_test(is_registrar)
 def registrar_appointments(request):
@@ -306,10 +337,30 @@ def registrar_dashboard(request):
     return render(request, "core/registrar_website.html", context)
 
 
+def certificate_request_view(request):
+    user = request.user
 
+    if request.method == "POST":
+        form = CertificateRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            certificate = form.save(commit=False)
+            certificate.student = user if user.is_authenticated else None
+            certificate.save()
+            messages.success(request, "Your certificate request has been submitted successfully!")
+            return redirect('core:certificate_request')
+        else:
+            messages.error(request, "Please correct the errors below.")
 
+    else:
+        form = CertificateRequestForm()
 
+    # show prev request
+    previous_request = CertificateRequest.objects.filter(student=request.user).order_by('-requested_at')
 
+    return render(request, 'core/certificate_request.html', {
+        'form': form,
+        'previous_request': previous_request,
+    })
 
 
 

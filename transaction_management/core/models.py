@@ -5,6 +5,7 @@ from django.contrib.auth.models import User #built-in user model for authenticti
 from django.db import models #defining database models (e.g, tables, etc)
 import uuid #
 from datetime import datetime, timedelta #handling dates and time
+from django.utils import timezone
 
 
 #THis function allows for file uploads
@@ -64,7 +65,35 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.appointment_date} ({self.status})"
+    
+class CertificateRequest(models.Model):
+    CERTIFICATE_CHOICES = [
+        ('good_moral', 'Good Moral Certificate'),
+        ('enrollment', 'Certificate of Enrollment'),
+        ('registration_form', 'Registration Form'),
+        ('tor', 'Transcript of Records'),
+        ('cog', 'Certificate of Grades'),
+        ('diploma', 'Diploma'),
+    ]
 
+    student = models.ForeignKey(User,on_delete=models.CASCADE)
+    certificate_type = models.CharField(max_length=50, choices=CERTIFICATE_CHOICES)
+    purpose = models.TextField(blank=True, null=True)
+    supporting_document = models.FileField(upload_to='certificates/', blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('Pending', 'Pending'),
+            ('Approved', 'Approved'),
+            ('Released', 'Released'),
+            ('Declined', 'Declined')
+        ],
+        default='Pending'
+    )
+    requested_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.student.username} - {self.certificate_type} ({self.status})"
 
 
 
