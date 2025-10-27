@@ -17,7 +17,31 @@ from django.utils import timezone
 from datetime import date
 from .forms import CertificateRequestForm
 from .models import CertificateRequest
+from django.contrib.auth.decorators import login_required
 
+
+@login_required
+def student_dashboard(request):
+    """
+        Student landing page after registration or login
+        shows quick link and status summary
+    """
+
+    profile = getattr(request.user, "profile", None)
+    appointments = Appointment.objects.filter(student=request.user).count()
+    certificates = CertificateRequest.objects.filter(student=request.user).count() if 'CertificateRequest' in globals() else 0
+
+    # if not yet approved, redirect to pending page
+    if not profile.is_approved_by_registrar:
+        return redirect("core:pending_approval")
+    return render(request, "core/student.dashboard.html", {"profile": profile})
+
+    context = {
+        "profile": profile,
+        "appointments": appointments,
+        "certificates": certificates,
+    }
+    return render(request, "core/student_dashboard.html", context)
 
 def generate_otp_code(length=6):
     return "".join(str(random.randint(0,9)) for _ in range(length))
@@ -168,7 +192,7 @@ def staff_check(user):
 
 @user_passes_test(staff_check)
 def approval_list(request):
-    profiles = Profile.objects.filter(is_verified_email=True, is_approve_by_registrar=False)
+    profiles = Profile.objects.filter(is_verified_email=True, is_approved_by_registrar=False)
     return render(request, "core/approval_list.html", {"profiles": profiles})
 
 @user_passes_test(staff_check)
@@ -284,7 +308,7 @@ def update_appointment_status(request, appointment_id, status):
     appointment.status = status
     appointment.save()
     messages.success(request, f"Appointment {status.lower()} successfully")
-    return redirect("registrar_appointments")
+    return redirect("core:registrar_appointments")
 
 
 
@@ -336,6 +360,19 @@ def registrar_dashboard(request):
 
     return render(request, "core/registrar_website.html", context)
 
+
+# REGISTRAR: Allows to view ll certificate request
+def registrar_certificates(request):
+    certificates = CertificateRequest.objects.all().order_by("-requested_at")
+    return render(request, "core/registrar_certificates.html", {"certificates": certificates})
+
+# REGISTRAR: update(approve/reject/release)
+def update_certificate_status(request, cert_id, status):
+    cert = get_object_or_404(CertificateRequest, id=cert_id)
+    cert.status = status
+    cert.save()
+    messages.success(request, f"Certificate request {status.lower()} successfully")
+    return redirect("core:registrar_certificates")
 
 def certificate_request_view(request):
     user = request.user

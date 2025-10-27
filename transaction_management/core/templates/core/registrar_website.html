@@ -37,7 +37,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Academic Records System</h1>
+                        <h1 class="text-2xl font-bold text-gray-800">Transaction Management System</h1>
                         <p class="text-sm text-gray-600">Registrar Document Management Platform</p>
                     </div>
                 </div>
@@ -155,6 +155,32 @@
                     {% endfor %}
                     <p class="text-gray-500 text-sm">No recent activity yet...</p>
         </div>
+        
+        <!-- NAV CARDS -->
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <a href="{% url 'core:registrar_certificates' %}" class="block bg-green-100 hover:bg-green-200 p-6 rounded-xl shadow transition">
+                <h2 class="text-lg font-semibold text-green-800">Certificate Requests</h2>
+                <p class="text-gray-700 text-sm mt-2">Manage and approve certificate requests.</p>
+            </a>
+
+            <a href="{% url 'core:registrar_appointments' %}" class="block bg-blue-100 hover:bg-blue-200 p-6 rounded-xl shadow transition">
+                <h2 class="text-lg font-semibold text-blue-800">Appointments</h2>
+                <p class="text-gray-700 text-sm mt-2">View and update appointment requests.</p>
+            </a>
+
+            <a href="{% url 'core:approval_list' %}" class="block bg-yellow-100 hover:bg-yellow-200 p-6 rounded-xl shadow transition">
+                <h2 class="text-lg font-semibold text-yellow-800">Pending Accounts</h2>
+                <p class="text-gray-700 text-sm mt-2">Approve or reject student accounts.</p>
+            </a>
+
+                        <!-- Student Approvals -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Pending Approvals</h3>
+                <p class="text-gray-500 mb-2">Review and approve new student accounts.</p>
+                <a href="{% url 'core:approval_list' %}" class="text-blue-600 hover:underline">Go to Approvals</a>
+            </div>
+        </div>
+
 
         <!-- Document Requests Tab -->
         <div id="requests-content" class="tab-content hidden">
