@@ -1,4 +1,6 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import authenticate, login
 from .forms import StudentRegistrationForm, OTPForm
 from django.contrib.auth.models import User
@@ -20,28 +22,59 @@ from .models import CertificateRequest
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
+# @login_required
 def student_dashboard(request):
     """
-        Student landing page after registration or login
-        shows quick link and status summary
+    Student landing page after registration or login
+    shows quick links and status summary
     """
 
-    profile = getattr(request.user, "profile", None)
-    appointments = Appointment.objects.filter(student=request.user).count()
-    certificates = CertificateRequest.objects.filter(student=request.user).count() if 'CertificateRequest' in globals() else 0
+    # Allow open access for testing
+    user = request.user if request.user.is_authenticated else None
+    profile = None
+    appointments = []
+    certificates = []
+    account_status = "Unverified"
 
-    # if not yet approved, redirect to pending page
-    if not profile.is_approved_by_registrar:
-        return redirect("core:pending_approval")
-    return render(request, "core/student.dashboard.html", {"profile": profile})
+    # Get student profile if logged in
+    if user:
+        try:
+            profile = Profile.objects.get(user=user)
+            if profile.is_approved_by_registrar:
+                account_status = "Approved by Registrar"
+            elif profile.is_verified_email:
+                account_status = "Pending Registrar Approval"
+            else:
+                account_status = "Pending Email Verification"
+        except Profile.DoesNotExist:
+            profile = None
+
+        # Get student's appointments and certificates if logged in
+        try:
+            from .models import CertificateRequest
+            appointments = Appointment.objects.filter(student=user).order_by('-created_at')
+            certificates = CertificateRequest.objects.filter(student=user).order_by('-created_at')
+        except Exception:
+            certificates = []
+    else:
+        # For anonymous visitors — no queries using user
+        profile = None
+        appointments = []
+        certificates = []
+        account_status = "Guest Access (Testing Mode)"
 
     context = {
         "profile": profile,
         "appointments": appointments,
         "certificates": certificates,
+        "account_status": account_status,
     }
+
     return render(request, "core/student_dashboard.html", context)
+
+
+
+
 
 def generate_otp_code(length=6):
     return "".join(str(random.randint(0,9)) for _ in range(length))
@@ -126,9 +159,6 @@ def register(request):
     
 def login_view(request):
     return render(request, 'core/login.html')
-
-def register(request):
-    return render(request, "core/register.html")
 
 def verify_otp(request):
     """ request session 
@@ -233,7 +263,7 @@ def reject_profile(request, profile_id):
 
 # helping the function to check if the user is staff
 def is_registrar(user):
-    return user.is_staff
+    return user.is_staff # can be adjust to have a custom role system
 
 # @login_required
 def student_appointments(request):
@@ -376,28 +406,42 @@ def update_certificate_status(request, cert_id, status):
 
 def certificate_request_view(request):
     user = request.user
+    from .models import CertificateRequest
 
+    # If user is not logged in (guest view)
+    if not user.is_authenticated:
+        # Create a blank form (so you can still see it)
+        form = CertificateRequestForm()
+        previous_request = []  # no real data for guest
+        messages.info(request, "You are viewing as a guest. Please log in to submit a request.")
+        return render(request, 'core/certificate_request.html', {
+            'form': form,
+            'previous_request': previous_request,
+            'guest_view': True,
+        })
+
+    # --- If logged in user ---
     if request.method == "POST":
         form = CertificateRequestForm(request.POST, request.FILES)
         if form.is_valid():
             certificate = form.save(commit=False)
-            certificate.student = user if user.is_authenticated else None
+            certificate.student = user
             certificate.save()
             messages.success(request, "Your certificate request has been submitted successfully!")
             return redirect('core:certificate_request')
         else:
             messages.error(request, "Please correct the errors below.")
-
     else:
         form = CertificateRequestForm()
 
-    # show prev request
-    previous_request = CertificateRequest.objects.filter(student=request.user).order_by('-requested_at')
+    # show previous requests only for logged-in users
+    previous_request = CertificateRequest.objects.filter(student=user).order_by('-requested_at')
 
     return render(request, 'core/certificate_request.html', {
         'form': form,
         'previous_request': previous_request,
     })
+
 
 
 

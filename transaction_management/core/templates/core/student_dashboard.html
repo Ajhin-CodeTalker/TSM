@@ -1,28 +1,98 @@
-{% extends 'core/base.html' %}
-{% block content %}
-<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-10">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Welcome, {{ request.user.first_name }}!</h2>
-
-    {% if profile and not profile.is_approved_by_registrar %}
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
-            Your account is still pending registrar approval. You will be notified once verified.
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+    <style>
+        body { background: #f3f4f6; font-family: 'Segoe UI', sans-serif; }
+        .container { max-width: 1100px; margin: 2rem auto; background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { color: #1f2937; }
+        .status { font-weight: 600; color: #2563eb; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .card { background: #f9fafb; padding: 1rem 1.5rem; border-radius: 8px; border-left: 5px solid #2563eb; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #f3f4f6; font-weight: 600; }
+        .btn { background: #2563eb; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; }
+        .btn:hover { background: #1d4ed8; }
+        .section { margin-top: 2rem; }
+        .logout { float: right; color: #dc2626; text-decoration: none; }
+        .logout:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome, {{ user.first_name }}!</h2>
+            <!-- <a href="{% url 'logout' %}" class="logout">Logout</a> -->
         </div>
-    {% else %}
-        <div class="grid md:grid-cols-2 gap-6">
-            <!-- Appointment Access -->
-            <div class="p-4 bg-blue-50 rounded-lg shadow-md hover:shadow-lg transition">
-                <h3 class="font-semibold text-lg text-blue-700">Book Appointment</h3>
-                <p class="text-sm text-gray-600">Schedule a meeting with the registrar.</p>
-                <a href="{% url 'core:student_appointments' %}" class="text-blue-600 font-medium hover:underline">Go to Appointments →</a>
-            </div>
+        <p class="status">Account Status: {{ account_status }}</p>
 
-            <!-- Certificate Access -->
-            <div class="p-4 bg-green-50 rounded-lg shadow-md hover:shadow-lg transition">
-                <h3 class="font-semibold text-lg text-green-700">Request Certificates</h3>
-                <p class="text-sm text-gray-600">Request registration form, good moral, or enrollment certificate.</p>
-                <a href="{% url 'core:certificate_request' %}" class="text-green-600 font-medium hover:underline">Go to Requests →</a>
+        <div class="card-grid">
+            <div class="card">
+                <h4>Appointments</h4>
+                <p>{{ appointments.count }} total</p>
+            </div>
+            <div class="card">
+                <h4>Certificates</h4>
+                <p>{{ certificates.count }} total</p>
+            </div>
+            <div class="card">
+                <h4>Profile</h4>
+                <p>{{ profile.course }} - {{ profile.year_level }}</p>
             </div>
         </div>
-    {% endif %}
-</div>
-{% endblock %}
+
+        <div class="section">
+            <h3>Your Appointments</h3>
+            {% if appointments %}
+                <table>
+                    <thead>
+                        <tr><th>Date</th><th>Time</th><th>Purpose</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for a in appointments %}
+                            <tr>
+                                <td>{{ a.appointment_date }}</td>
+                                <td>{{ a.appointment_time }}</td>
+                                <td>{{ a.purpose }}</td>
+                                <td>{{ a.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No appointments found.</p>
+            {% endif %}
+            <a href="{% url 'core:student_appointments' %}" class="btn">Book Appointment</a>
+        </div>
+
+        <div class="section">
+            <h3>Your Certificate Requests</h3>
+            {% if certificates %}
+                <table>
+                    <thead>
+                        <tr><th>Type</th><th>Purpose</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for c in certificates %}
+                            <tr>
+                                <td>{{ c.certificate_type }}</td>
+                                <td>{{ c.purpose }}</td>
+                                <td>{{ c.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No certificate requests yet.</p>
+            {% endif %}
+            <a href="{% url 'core:certificate_request' %}" class="btn">Request Certificate</a>
+        </div>
+    </div>
+</body>
+</html>

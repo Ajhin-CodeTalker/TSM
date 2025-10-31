@@ -23,6 +23,7 @@ class Profile(models.Model):
     student_number = models.CharField(max_length=50, unique=True)
     course = models.CharField(max_length=100, blank=True)
     year_level = models.CharField(max_length=10, blank=True)
+    cor_id = models.FileField(upload_to='uploads/cor_id/', blank=True, null=True) # Uploading file of the students
     is_verified_email = models.BooleanField(default=False) #OTP verification that will be sent on their respective email
     is_approved_by_registrar = models.BooleanField(default=False) #registrar approval towards the accounts
 

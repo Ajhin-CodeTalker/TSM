@@ -9,7 +9,8 @@
 </head>
 <body>
     <div class="login">
-        <form id="registrationForm">
+        <form id="registrationForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
             <h2>Sign Up</h2>
 
             <div class="names left">
@@ -45,6 +46,12 @@
                     <button type="button" id="toggleConfirmPassword"><i class="fa-regular fa-eye"></i></button>
                 </div>
             </div>            
+
+            <div class="inputBox">
+                <i class="fa-solid fa-file"></i>
+                <input type="file" id="corFile" name="corFile" accept=".pdf,.jpg,.jpeg,.png" required>
+                <label for="corFile">Upload COR / ID</label>
+            </div>
 
             <div class="agree">
                 <input type="checkbox" value="agree" required> Agree to the
