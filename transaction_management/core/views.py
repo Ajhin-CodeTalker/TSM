@@ -20,6 +20,14 @@ from datetime import date
 from .forms import CertificateRequestForm
 from .models import CertificateRequest
 from django.contrib.auth.decorators import login_required
+from .forms import RegistrarRegistrationForm
+from django.contrib.auth import logout
+
+
+
+
+
+
 
 
 # @login_required
@@ -157,8 +165,66 @@ def register(request):
         #allows to always return a response (for GET or invalid type of form)
     return render(request, "core/register.html", {"form": form})
     
+# THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
-    return render(request, 'core/login.html')
+    """
+    Handles login for both students and registrar users.
+    Registrar users (is_staff=True) go to registrar dashboard.
+    Students go to student dashboard after approval.
+    """
+    if request.method == "POST":
+        email_or_username = request.POST.get("email")
+        password = request.POST.get("password")
+
+        # Try to find user by email
+        try:
+            user_obj = User.objects.get(email=email_or_username)
+            username = user_obj.username
+        except User.DoesNotExist:
+            username = email_or_username  # fallback if username used instead
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+
+            # Registrar login
+            if user.is_staff:
+                return redirect("core:registrar_dashboard")
+
+            # Student login
+            try:
+                profile = user.profile
+                if not profile.is_verified_email:
+                    messages.warning(request, "Please verify your email first.")
+                    return redirect("core:verify_otp")
+                elif not profile.is_approved_by_registrar:
+                    messages.info(request, "Your account is pending registrar approval.")
+                    return redirect("core:pending_approval")
+            except Exception:
+                pass
+
+            return redirect("core:student_dashboard")
+
+        else:
+            messages.error(request, "Invalid email/username or password.")
+
+    return render(request, "core/login.html")
+
+
+
+
+# LOGOUT FRAME
+def logout_view(request):
+    logout(request)
+    return redirect("core:login")
+
+
+
+
+
+
+
 
 def verify_otp(request):
     """ request session 
@@ -342,7 +408,8 @@ def update_appointment_status(request, appointment_id, status):
 
 
 
-# @user_passes_test(is_registrar)
+@login_required(login_url='/login/')
+@user_passes_test(is_registrar, login_url='/login/')
 def registrar_dashboard(request):
     today = date.today()
     month_start = today.replace(day=1)
@@ -441,6 +508,38 @@ def certificate_request_view(request):
         'form': form,
         'previous_request': previous_request,
     })
+
+
+
+
+
+
+
+
+
+# This is for REGISTRAR REGISTER
+def registrar_register(request):
+    """Registrar REGISTRATION"""
+    if request.method == "POST":
+        form = RegistrarRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data["password"])
+            user.is_staff = True # This is the landmark/mark as registrar/staff
+            user.save()
+            messages.success(request, "Registra account created successfuly. Please proceed to login")
+            return redirect("core:login") # Redireting towards the login frame
+        
+    else:
+        form = RegistrarRegistrationForm()
+
+    return render(request, "core/registrar_register.html", {"form": form})
+
+
+
+
+
+
 
 
 

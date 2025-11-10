@@ -32,8 +32,11 @@ urlpatterns = [
     path("registrar/certificates/update/<int:cert_id>/<str:status>/", views.update_certificate_status, name="update_certificate_status"),
 
 
+    # THESE ARE FOR REGISTRAR
+    path("registrar/register/", views.registrar_register, name="registrar_register"),
+
     # THESE ARE THE STUDENT PATH
-    path('student/dashboard/', views.student_dashboard, name="student_dashboard")
+    path('student/dashboard/', views.student_dashboard, name="student_dashboard"),
 
 
 
