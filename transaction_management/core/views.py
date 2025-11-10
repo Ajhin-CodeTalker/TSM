@@ -22,8 +22,8 @@ from .models import CertificateRequest
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrarRegistrationForm
 from django.contrib.auth import logout
-
-
+from django.shortcuts import redirect
+from django.contrib.auth import logout
 
 
 
@@ -154,9 +154,14 @@ def register(request):
             recipient_list = [email]
             send_mail(subject, message, from_email,recipient_list, fail_silently=False)
 
-            # save username in session to be used by verify page
-            request.session["verify_user_id"] = user.id
+
+            # Redirect Block
+            request.session["verify_user_id"] = user.id # Storing the data from the user
+            messages.success(
+                request,"Registration Successful! Please verify your email using OTP"
+            )
             return redirect("core:verify_otp")
+        
         else:
             print("Form Errors:", form.errors)
         

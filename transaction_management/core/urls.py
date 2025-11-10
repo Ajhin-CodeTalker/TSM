@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .import views
+from . import views
 from django.contrib import admin
 from core import views
 
@@ -11,6 +11,9 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("login/", views.login_view, name="login"),
     path("verify/", views.verify_otp, name="verify_otp"),
+
+    # LOGOUT
+    path('logout/', views.login_view, name='logout'),
 
     # THESE ARE FOR APPROVALS
     path("pending/", views.pending_approval, name="pending_approval"),

@@ -1,0 +1,27 @@
+<!-- core/templates/core/navbar.html -->
+<nav style="background-color: #006400; padding: 10px;">
+  <ul style="list-style: none; display: flex; gap: 20px; align-items: center;">
+    <li><a href="/" style="color: white; font-weight: bold;">CVSU Transaction Management System</a></li>
+
+    {% if user.is_authenticated %}
+      {% if user.is_staff %}
+        <!-- Registrar Navbar -->
+        <li><a href="{% url 'core:registrar_dashboard' %}" style="color: white;">Dashboard</a></li>
+        <li><a href="{% url 'core:registrar_appointments' %}" style="color: white;">Appointments</a></li>
+        <li><a href="{% url 'core:registrar_certificates' %}" style="color: white;">Certificates</a></li>
+        <li><a href="{% url 'core:approval_list' %}" style="color: white;">Approvals</a></li>
+        <li><a href="/admin/" style="color: white;">Admin</a></li>
+      {% else %}
+        <!-- Student Navbar -->
+        <li><a href="{% url 'core:student_dashboard' %}" style="color: white;">Dashboard</a></li>
+        <li><a href="{% url 'core:student_appointments' %}" style="color: white;">Appointments</a></li>
+        <li><a href="{% url 'core:certificate_request' %}" style="color: white;">Certificates</a></li>
+      {% endif %}
+      <li><a href="{% url 'core:logout' %}" style="color: white;">Logout</a></li>
+    {% else %}
+      <!-- Guest Navbar -->
+      <li><a href="{% url 'core:register' %}" style="color: white;">Register</a></li>
+      <li><a href="{% url 'core:login' %}" style="color: white;">Login</a></li>
+    {% endif %}
+  </ul>
+</nav>
