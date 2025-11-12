@@ -3,64 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Transaction Management System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #006400;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        nav {
-            background-color: #004d00;
-            padding: 10px;
-            text-align: center;
-        }
-        nav a {
-            color: white;
-            margin: 0 15px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        main {
-            margin: 20px auto;
-            width: 90%;
-            max-width: 1000px;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
-        }
-        footer {
-            text-align: center;
-            background-color: #f1f1f1;
-            padding: 10px;
-            margin-top: 30px;
-        }
-    </style>
+
+    <!-- ✅ Add Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<header>
-    <h1>CVSU Transaction Management System</h1>
-</header>
+<body class="bg-gray-100 min-h-screen flex flex-col">
 
-<main>
-    {% block content %}
-    <!-- Page content goes here -->
-    {% endblock %}
-</main>
+    <!-- Header -->
+    <header class="bg-green-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Transaction Management System</h1>
+            <nav class="space-x-6">
+                <a href="{% url 'core:registrar_dashboard' %}" class="hover:underline">Home</a>
+                <a href="{% url 'core:registrar_appointments' %}" class="hover:underline">Appointments</a>
+                <a href="{% url 'core:registrar_certificates' %}" class="hover:underline">Certificates</a>
+                <a href="{% url 'core:approval_list' %}" class="hover:underline">Pending Accounts</a>
+                <a href="{% url 'core:logout' %}" class="hover:underline">Logout</a>
+            </nav>
+        </div>
+    </header>
 
-<footer>
-    <p>&copy; 2025 Cavite State University - Transaction System</p>
-</footer>
+    <!-- Main content -->
+    <main class="flex-grow container mx-auto p-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-green-900 text-white text-center py-3 mt-6">
+        <p>&copy; Cavite State University — Transaction Management System</p>
+    </footer>
 
 </body>
 </html>

@@ -1,15 +1,20 @@
-<!doctype html>
-<html>
-<head><title>Approval List</title></head>
-<body>
-<h1>Pending Student Approvals</h1>
-<table border="1">
-    {% extends 'core/base.html' %}
+{% extends "base.html" %}
+
+{% block navbar %}
+<nav>
+    <a href="{% url 'core:registrar_dashboard' %}">🏠 Home</a>
+    <a href="{% url 'core:registrar_appointments' %}">📅 Appointments</a>
+    <a href="{% url 'core:registrar_certificates' %}">📜 Certificates</a>
+    <a href="{% url 'core:approval_list' %}">👥 Pending Accounts</a>
+    <a href="{% url 'core:logout' %}">🚪 Logout</a>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-5xl mx-auto mt-10 bg-white rounded-xl shadow-lg p-6">
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Pending Student Approvals</h2>
 
-    <table class="min-w-full border text-sm">
+    <table class="min-w-full border text-sm border-gray-200">
         <thead class="bg-gray-100">
             <tr>
                 <th class="p-3 text-left">Name</th>
@@ -22,7 +27,7 @@
         </thead>
         <tbody>
             {% for profile in profiles %}
-            <tr class="border-t">
+            <tr class="border-t hover:bg-gray-50">
                 <td class="p-3">{{ profile.user.get_full_name }}</td>
                 <td class="p-3">{{ profile.student_number }}</td>
                 <td class="p-3">{{ profile.course }}</td>
@@ -42,7 +47,3 @@
     </table>
 </div>
 {% endblock %}
-
-</table>
-</body>
-</html>

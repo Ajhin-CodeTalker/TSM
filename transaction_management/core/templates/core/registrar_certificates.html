@@ -1,4 +1,15 @@
-{% extends 'core/base.html' %}
+{% extends "base.html" %}
+
+{% block navbar %}
+<nav>
+    <a href="{% url 'core:registrar_dashboard' %}">🏠 Home</a>
+    <a href="{% url 'core:registrar_appointments' %}">📅 Appointments</a>
+    <a href="{% url 'core:registrar_certificates' %}">📜 Certificates</a>
+    <a href="{% url 'core:approval_list' %}">👥 Pending Accounts</a>
+    <a href="{% url 'core:logout' %}">🚪 Logout</a>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-6">
   <h2 class="text-2xl font-semibold mb-4">Certificate Requests</h2>
