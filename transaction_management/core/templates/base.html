@@ -9,19 +9,21 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-green-800 text-white p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">Transaction Management System</h1>
-            <nav class="space-x-6">
-                <a href="{% url 'core:registrar_dashboard' %}" class="hover:underline">Home</a>
-                <a href="{% url 'core:registrar_appointments' %}" class="hover:underline">Appointments</a>
-                <a href="{% url 'core:registrar_certificates' %}" class="hover:underline">Certificates</a>
-                <a href="{% url 'core:approval_list' %}" class="hover:underline">Pending Accounts</a>
-                <a href="{% url 'core:logout' %}" class="hover:underline">Logout</a>
-            </nav>
-        </div>
-    </header>
+
+    <!-- Create a condition that only allows this part to be shown towards registrar frame only-->
+{% if request.user.is_authenticated and request.user.profile.is_registrar %}
+<header>
+  <h1>Transaction Management System</h1>
+  <nav>
+      <a href="{% url 'core:registrar_dashboard' %}">Home</a>
+      <a href="{% url 'core:registrar_appointments' %}">Appointments</a>
+      <a href="{% url 'core:registrar_certificates' %}">Certificates</a>
+      <a href="{% url 'core:approval_list' %}">Pending Accounts</a>
+      <a href="{% url 'core:logout' %}">Logout</a>
+  </nav>
+</header>
+{% endif %}
+
 
     <!-- Main content -->
     <main class="flex-grow container mx-auto p-6">

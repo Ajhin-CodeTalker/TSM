@@ -1,40 +1,83 @@
-{% extends 'core/base.html' %}
-{% block title %}Certificate Request{% endblock %}
+{% extends "base.html" %}   {# ✅ Use the new unified base layout like student_appointment.html #}
+
+<!-- Student Navbar  -->
+
 
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
-    <h2 class="text-2xl font-semibold mb-4 text-green-700">Certificate Request</h2>
+<nav style="background-color: #004d00; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+  <a href="{% url 'core:student_dashboard' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Home</a>
+  <a href="{% url 'core:student_appointments' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Appointment</a>
+  <a href="{% url 'core:logout' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;"> Logout</a>
+</nav>
 
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit"
-            class="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-800 transition duration-200">
-            Submit Request
-        </button>
-    </form>
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
+  <h2 class="text-2xl font-semibold mb-4 text-green-800 text-center">Request a Certificate</h2>
 
-    <hr class="my-8 border-gray-300">
+  <!-- ✅ Django success/error/info messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div style="
+        background: #e8f5e9;
+        border: 1px solid #81c784;
+        color: #2e7d32;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 6px;">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
 
-    <h3 class="text-xl font-semibold mb-3 text-gray-700">Your Previous Requests</h3>
+  <!-- 📋 Certificate Request Form -->
+  <form method="POST" enctype="multipart/form-data" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" style="
+      background-color: #006400;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;">
+      Submit Request
+    </button>
+  </form>
 
-    {% if previous_requests %}
-        <ul class="space-y-3">
-            {% for request in previous_requests %}
-                <li class="p-4 border rounded-lg shadow-sm">
-                    <p><strong>Type:</strong> {{ request.certificate_type }}</p>
-                    <p><strong>Purpose:</strong> {{ request.purpose }}</p>
-                    <p><strong>Date:</strong> {{ request.requested_at|date:"M d, Y H:i" }}</p>
-                    <p><strong>Status:</strong>
-                        <span class="{% if request.status == 'Approved' %}text-green-600{% elif request.status == 'Rejected' %}text-red-600{% else %}text-gray-600{% endif %}">
-                            {{ request.status }}
-                        </span>
-                    </p>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-gray-600">No previous requests found.</p>
-    {% endif %}
+  <!-- 🕓 Previous Requests Table -->
+  <h3 class="text-xl font-semibold mt-6 mb-3 text-green-800 text-center">Your Previous Requests</h3>
+  <table style="width: 100%; border-collapse: collapse; text-align: center;">
+    <thead>
+      <tr style="background-color: #004d00; color: white;">
+        <th style="padding: 10px;">Type</th>
+        <th style="padding: 10px;">Purpose</th>
+        <th style="padding: 10px;">Date</th>
+        <th style="padding: 10px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in previous_requests %}
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 8px;">{{ request.certificate_type }}</td>
+        <td style="padding: 8px;">{{ request.purpose }}</td>
+        <td style="padding: 8px;">{{ request.requested_at|date:"M d, Y H:i" }}</td>
+        <td style="padding: 8px;">
+          {% if request.status == 'Approved' %}
+            <span style="color: green; font-weight: bold;">Approved</span>
+          {% elif request.status == 'Rejected' %}
+            <span style="color: red; font-weight: bold;">Rejected</span>
+          {% elif request.status == 'Released' %}
+            <span style="color: blue; font-weight: bold;">Released</span>
+          {% else %}
+            <span style="color: orange; font-weight: bold;">Pending</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" style="padding: 10px; color: gray;">No previous requests found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

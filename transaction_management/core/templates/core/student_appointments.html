@@ -1,147 +1,77 @@
-{% extends "base.html" %}
 {% block content %}
 
-<style>
-  .container {
-    max-width: 800px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
+<!-- ✅ Student-specific navbar (independent, won't affect registrar) -->
+<nav style="background-color: #004d00; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+  <a href="{% url 'core:student_dashboard' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Home</a>
+  <a href="{% url 'core:certificate_request' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Request Certificate</a>
+  <a href="{% url 'core:logout' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Logout</a>
+</nav>
 
-  h2, h3 {
-    color: #006400;
-    text-align: center;
-  }
+<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-6">
+  <h2 class="text-2xl font-semibold mb-4 text-green-800 text-center">Book an Appointment</h2>
 
-  form {
-    margin-bottom: 30px;
-    padding: 15px;
-    background: #f4f6f4;
-    border-radius: 8px;
-  }
-
-  button {
-    background-color: #006400;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: #004d00;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-
-  th {
-    background-color: #004d00;
-    color: white;
-    padding: 10px;
-    text-align: center;
-  }
-
-  td {
-    text-align: center;
-    padding: 8px;
-    border: 1px solid #ddd;
-  }
-
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  .status-pending {
-    color: orange;
-    font-weight: bold;
-  }
-
-  .status-approved {
-    color: green;
-    font-weight: bold;
-  }
-
-  .status-declined {
-    color: red;
-    font-weight: bold;
-  }
-
-  .message {
-    background: #e7f9e7;
-    border: 1px solid #b2d8b2;
-    padding: 10px;
-    border-radius: 6px;
-    color: #2e7d32;
-    margin-bottom: 15px;
-  }
-
-</style>
-
-<div class="container">
-  <h2>Book an Appointment</h2>
-
-  <!-- Success Message -->
+  <!-- ✅ Display Django messages -->
   {% if messages %}
     {% for message in messages %}
-      <div class="message">{{ message }}</div>
+      <div style="background: #e8f5e9; border: 1px solid #81c784; color: #2e7d32; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
+        {{ message }}
+      </div>
     {% endfor %}
   {% endif %}
 
-  <form method="post">
+  <!-- 🗓️ Appointment Form -->
+  <form method="post" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
     {% csrf_token %}
-    <div>
-      <label for="id_appointment_date"><b>Date:</b></label><br>
+    <div style="margin-bottom: 15px;">
+      <label><b>Date:</b></label><br>
       {{ form.appointment_date }}
     </div>
-    <div>
-      <label for="id_appointment_time"><b>Time:</b></label><br>
+    <div style="margin-bottom: 15px;">
+      <label><b>Time:</b></label><br>
       {{ form.appointment_time }}
     </div>
-    <div>
-      <label for="id_purpose"><b>Purpose:</b></label><br>
+    <div style="margin-bottom: 15px;">
+      <label><b>Purpose:</b></label><br>
       {{ form.purpose }}
     </div>
-    <br>
-    <button type="submit">Book Appointment</button>
+    <button type="submit" style="background-color: #006400; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+      Book Appointment
+    </button>
   </form>
 
-  <h3>Your Appointments</h3>
-  <table>
-    <tr>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Purpose</th>
-      <th>Status</th>
-    </tr>
-
-    {% for a in appointments %}
-    <tr>
-      <td>{{ a.appointment_date }}</td>
-      <td>{{ a.appointment_time }}</td>
-      <td>{{ a.purpose }}</td>
-      <td>
-        {% if a.status == 'pending' %}
-          <span class="status-pending">Pending</span>
-        {% elif a.status == 'approved' %}
-          <span class="status-approved">Approved</span>
-        {% elif a.status == 'declined' %}
-          <span class="status-declined">Declined</span>
-        {% else %}
-          {{ a.status }}
-        {% endif %}
-      </td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="4">No appointments yet.</td></tr>
-    {% endfor %}
+  <!-- 📅 Appointments Table -->
+  <h3 class="text-xl font-semibold mt-6 mb-3 text-green-800 text-center">Your Appointments</h3>
+  <table style="width: 100%; border-collapse: collapse; text-align: center;">
+    <thead>
+      <tr style="background-color: #004d00; color: white;">
+        <th style="padding: 10px;">Date</th>
+        <th style="padding: 10px;">Time</th>
+        <th style="padding: 10px;">Purpose</th>
+        <th style="padding: 10px;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 8px;">{{ a.appointment_date }}</td>
+        <td style="padding: 8px;">{{ a.appointment_time }}</td>
+        <td style="padding: 8px;">{{ a.purpose }}</td>
+        <td style="padding: 8px;">
+          {% if a.status == 'pending' %}
+            <span style="color: orange; font-weight: bold;">Pending</span>
+          {% elif a.status == 'approved' %}
+            <span style="color: green; font-weight: bold;">Approved</span>
+          {% elif a.status == 'declined' %}
+            <span style="color: red; font-weight: bold;">Declined</span>
+          {% else %}
+            {{ a.status }}
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="padding: 10px; color: gray;">No appointments yet.</td></tr>
+      {% endfor %}
+    </tbody>
   </table>
 </div>
 
