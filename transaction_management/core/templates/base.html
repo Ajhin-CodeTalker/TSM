@@ -3,37 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <title>Transaction Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #006400;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        nav {
+            background-color: #004d00;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 1000px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        footer {
+            text-align: center;
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-top: 30px;
+        }
+            /* Added table styling for all pages */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #004d00;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
 
-    <!-- ✅ Add Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+        /* ✅ Footer */
+        footer {
+            text-align: center;
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-top: 30px;
+        }
+
+
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body>
 
+    <header>
+        <h1>CVSU Transaction Management System</h1>
+    </header>
 
-    <!-- Create a condition that only allows this part to be shown towards registrar frame only-->
-{% if request.user.is_authenticated and request.user.profile.is_registrar %}
-<header>
-  <h1>Transaction Management System</h1>
-  <nav>
-      <a href="{% url 'core:registrar_dashboard' %}">Home</a>
-      <a href="{% url 'core:registrar_appointments' %}">Appointments</a>
-      <a href="{% url 'core:registrar_certificates' %}">Certificates</a>
-      <a href="{% url 'core:approval_list' %}">Pending Accounts</a>
-      <a href="{% url 'core:logout' %}">Logout</a>
-  </nav>
-</header>
-{% endif %}
+    <!-- 🧭 Navbar placeholder -->
+    {% block navbar %}
+    {% endblock %}
 
-
-    <!-- Main content -->
-    <main class="flex-grow container mx-auto p-6">
+    <!-- ✅ Only one content block! -->
+    <main>
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-green-900 text-white text-center py-3 mt-6">
-        <p>&copy; Cavite State University — Transaction Management System</p>
+    <footer>
+        <p>&copy; 2025 Cavite State University - Transaction System</p>
     </footer>
 
 </body>
