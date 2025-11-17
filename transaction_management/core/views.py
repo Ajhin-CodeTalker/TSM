@@ -30,7 +30,7 @@ from django.contrib.auth import logout
 
 
 
-# @login_required
+@login_required
 def student_dashboard(request):
     """
     Student landing page after registration or login
@@ -230,48 +230,62 @@ def logout_view(request):
 
 
 
-
 def verify_otp(request):
-    """ request session 
+    """
+    request session 
     
     * allows to get for approval before finalization of the account
-    * create a verification of legitmacy of being a student of the campus
+    * create a verification of legitimacy of being a student of the campus
     * registrar will track documents before approving the account
     """
+
     user_id = request.session.get("verify_user_id")
     if not user_id:
         return redirect("core:register")
+
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
         form = OTPForm(request.POST)
+
         if form.is_valid():
             code = form.cleaned_data["code"].strip()
+
             # check last unexpired OTP
-            # in-case it double request of OTP
             otp_qs = OTP.objects.filter(user=user, code=code).order_by("-created_at")
+
             if not otp_qs.exists():
                 form.add_error("code", "Invalid code")
+
             else:
                 otp = otp_qs.first()
+
                 if otp.is_expired():
                     form.add_error("code", "Code expired. Request a new Code!")
+
                 else:
-                    # marking each profile as verified
+                    # Mark profile as verified
                     profile = user.profile
                     profile.is_verified_email = True
                     profile.save()
 
-                    # optionally allows to delete OTP's
+                    # Activate the account so login will work
+                    user.is_active = True
+                    user.save()
+
+                    # Remove all OTPs for this user
                     OTP.objects.filter(user=user).delete()
 
-                    #log user in
+                    # Log the user in
                     login(request, user)
+
+                    # Send to pending approval page
                     return redirect("core:pending_approval")
+
     else:
         form = OTPForm()
-    return render(request, "core/verify_otp.html", {"form": form, "email":user.email})
 
+    return render(request, "core/verify_otp.html", {"form": form, "email": user.email})
 
 
 

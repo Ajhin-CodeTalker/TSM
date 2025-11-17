@@ -12,60 +12,100 @@ YEAR_LEVEL_CHOICES = [
     ("3rd Year", "3rd Year"),
     ("4th Year", "4th Year"),
 ]
-
 class StudentRegistrationForm(forms.ModelForm):
-    # Add custome fields on top of django built-in User model field
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "id_password"}), label="Password") #password input
-    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "id_confirm_password"}), label="confirm_password") #confirmation of password field
-    student_number = forms.CharField(max_length=50, label="Student Number") #student number field
-    course = forms.CharField(max_length=100, required=True, label="Course") #course field
-    year_level = forms.ChoiceField(choices=YEAR_LEVEL_CHOICES, required=True, label="Year Level") #year level field
-    document = forms.FileField(required=True, label="Upload COR/ID") #uploading document
-    first_name = forms.CharField(max_length=30)
-    last_name = forms.CharField(max_length=30)
+    # --- User fields ---
+    username = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={"placeholder": "Username"})
+    )
 
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "School Email Address"})
+    )
+
+    first_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={"placeholder": "First Name"})
+    )
+
+    last_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={"placeholder": "Last Name"})
+    )
+
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Password"})
+    )
+
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "Confirm Password"})
+    )
+
+    # --- Profile-specific fields ---
+    student_number = forms.CharField(
+        max_length=50,
+        widget=forms.TextInput(attrs={"placeholder": "Student Number"})
+    )
+
+    course = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "Course"})
+    )
+
+    year_level = forms.ChoiceField(
+        choices=YEAR_LEVEL_CHOICES,
+        widget=forms.Select()
+    )
+
+    document = forms.FileField(
+        required=True,
+        label="Upload COR / School ID"
+    )
 
     class Meta:
         model = User
-        #including both user fields and custom field
-        fields = ["username", "email", "first_name", "last_name","password", "confirm_password", "course", "year_level", "document"]
-        # fields = ["username", "email", "password"]
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "password",
+            "confirm_password",
+            "student_number",
+            "course",
+            "year_level",
+            "document",
+        ]
 
-    #validating of registration 
+    # -----------------------------
+    # VALIDATION AREA
+    # -----------------------------
     def clean(self):
         cleaned = super().clean()
         pw = cleaned.get("password")
         cpw = cleaned.get("confirm_password")
 
-        #checking if password match
         if pw and cpw and pw != cpw:
-            raise forms.ValidationError("Password Don't Match!!!")
+            raise ValidationError("Passwords do not match.")
         return cleaned
-    
 
-    # This function allows to check the user inputted email address
     def clean_email(self):
-        email = self.cleaned_data.get("email") # get the email of the user
+        email = self.cleaned_data.get("email")
 
-        # checking if the user put the expected extenstion of the campus given email
         if not email.endswith("@cvsu.edu.ph"):
-            raise ValidationError("You must user your school email (@cvsu.edu.ph)")
-        
-        # checking if the user is already registered with that email, and will not be able to register again
+            raise ValidationError("You must use your school email (@cvsu.edu.ph)")
+
         if User.objects.filter(email=email).exists():
-            raise ValidationError("This email is already registered")
+            raise ValidationError("This email is already registered.")
+
         return email
 
-    #validating the unique student number
     def clean_student_number(self):
-        """
-            checking if the inputted student number is already registered to avoid multiple accounts
-        """
         student_number = self.cleaned_data.get("student_number")
-        from .models import Profile
         if Profile.objects.filter(student_number=student_number).exists():
-            raise forms.ValidationError("This student number is already registered")
+            raise ValidationError("This student number is already registered.")
         return student_number
+
     
 # Form for verifying OTP input
 class OTPForm(forms.Form):
