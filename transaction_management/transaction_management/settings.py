@@ -140,4 +140,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # EMAIL SETTINGS (DEVELOPMENT) -------------------------------
 # prints the email inside the terminal
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@cvsu.edu.ph"
+
+
+DEFAULT_FROM_EMAIL = "no-reply@vcsu.edu.ph"

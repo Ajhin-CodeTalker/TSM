@@ -141,10 +141,11 @@ def register(request):
             profile.is_verified_email = False
             profile.is_approved_by_registrar = False
             profile.save()
+
             """
             # Create OTP
             code = generate_otp_code()
-            expires = timezone.now() + timedelta(minutes=20)
+            expires = timezone.now() + timedelta(minutes=10)
             OTP.objects.create(user=user, code=code, expires_at=expires)
 
             # send email
@@ -152,7 +153,7 @@ def register(request):
             message = f"Hi {username}, your OTP code is {code}. It expires in {expires}. Thank you"
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [email]
-            send_mail(subject, message, from_email,recipient_list, fail_silently=False)
+            # send_mail(subject, message, from_email,recipient_list, fail_silently=False)
 
 
             # Redirect Block

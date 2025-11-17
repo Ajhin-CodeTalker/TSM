@@ -92,13 +92,12 @@ class StudentRegistrationForm(forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data.get("email")
 
-        if not email.endswith("@cvsu.edu.ph"):
-            raise ValidationError("You must use your school email (@cvsu.edu.ph)")
-
+        # allow ANY valid email
         if User.objects.filter(email=email).exists():
-            raise ValidationError("This email is already registered.")
-
+            raise ValidationError("This email is already registered")
+        
         return email
+
 
     def clean_student_number(self):
         student_number = self.cleaned_data.get("student_number")

@@ -21,10 +21,13 @@
                 <th class="p-3 text-left">Student Number</th>
                 <th class="p-3 text-left">Course</th>
                 <th class="p-3 text-left">Year</th>
+                <th class="p-3 text-left">Document</th>
+                <th class="p-3 text-left">Submitted</th>
                 <th class="p-3 text-left">Email Verified</th>
                 <th class="p-3 text-left">Action</th>
             </tr>
         </thead>
+
         <tbody>
             {% for profile in profiles %}
             <tr class="border-t hover:bg-gray-50">
@@ -32,7 +35,19 @@
                 <td class="p-3">{{ profile.student_number }}</td>
                 <td class="p-3">{{ profile.course }}</td>
                 <td class="p-3">{{ profile.year_level }}</td>
+
+                <td class="p-3">
+                    {% if profile.document %}
+                        <a href="{{ profile.document.url }}" class="text-blue-600 underline" target="_blank">View File</a>
+                    {% else %}
+                        No File
+                    {% endif %}
+                </td>
+
+                <td class="p-3">{{ profile.submitted_at|date:"M d, Y" }}</td>
+
                 <td class="p-3">{{ profile.is_verified_email|yesno:"Yes,No" }}</td>
+
                 <td class="p-3 space-x-2">
                     <a href="{% url 'core:approve_profile' profile.id %}" class="text-green-600 hover:underline">Approve</a>
                     <a href="{% url 'core:reject_profile' profile.id %}" class="text-red-600 hover:underline">Reject</a>
@@ -40,7 +55,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="p-3 text-center text-gray-500">No pending profiles found.</td>
+                <td colspan="8" class="p-3 text-center text-gray-500">No pending profiles found.</td>
             </tr>
             {% endfor %}
         </tbody>
