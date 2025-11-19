@@ -11,14 +11,32 @@
 
     <style>
         /* 🔒 Hide registrar link by default */
-        .secret-link {
-            display: none;
-        }
+        .secret-link,
+    .admin_secret_link {
+        display: none;
+    }
+
     </style>
 </head>
 <body>
     <div class="login">
         <form method="post">
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-2 text-white text-sm rounded
+                        {% if message.tags == 'error' %}
+                            bg-red-500
+                        {% elif message.tags == 'success' %}
+                            bg-green-500
+                        {% endif %}
+                    ">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             {% csrf_token %}
             <h2>Sign In</h2>
 
@@ -46,25 +64,49 @@
                     Registrar?
                     <a href="{% url 'core:registrar_register' %}"><b>Register here</b></a>
                 </p>
+
+                <p class="admin_secret_link">
+                    Admin
+                    <a href="/admin/"> Click here!</a>
+                </p>
             </div>
 
         </form>
     </div>
 
-    <!-- 🔑 SECRET TRIGGER SCRIPT -->
+    <!-- SECRET TRIGGER SCRIPT -->
     <script>
         const emailInput = document.getElementById("emailInput");
         const secretLink = document.querySelector(".secret-link");
+        const admin_secret = document.querySelector(".admin_secret_link");
 
-        const trigger = "@registrar";  // <-- change secret code here
+
+
+        const trigger = "@registrar";  // <-- changeable secret code here
+        const trigger_admin = "@admin" // <--- This is the code to view the admin frame
+
 
         emailInput.addEventListener("input", () => {
+
+            // This is for registrar
             if (emailInput.value.includes(trigger)) {
                 secretLink.style.display = "block";   // show
             } else {
                 secretLink.style.display = "none";    // hide
             }
+
+
+            // This is for admin
+            if(emailInput.value.includes(trigger_admin)){
+                admin_secret.style.display = "block"; // This condition will show the user
+            } else {
+                admin_secret.style.display = "none"; // This will hide
+            }
         });
+
+
+        
+
     </script>
 
 </body>

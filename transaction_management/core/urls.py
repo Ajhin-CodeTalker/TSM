@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 from django.contrib import admin
 from core import views
-
+from django.contrib.auth import views as auth_views
 
 app_name = "core"
 
@@ -13,7 +13,7 @@ urlpatterns = [
     # path("verify/", views.verify_otp, name="verify_otp"),
 
     # LOGOUT
-    path('logout/', views.login_view, name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # THESE ARE FOR APPROVALS
     path("waiting-for-approval/", views.waiting_for_approval, name="waiting_for_approval"),

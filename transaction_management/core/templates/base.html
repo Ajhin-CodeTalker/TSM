@@ -194,5 +194,22 @@
         © 2025 Cavite State University – Transaction System
     </footer>
 
+
+    <!-- Hidden Admin Button -->
+<a id="adminLink" href="/admin/"
+   class="hidden fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg">
+    Admin Panel
+</a>
+
+<script>
+    // Reveal admin button when pressing CTRL + SHIFT + A
+    document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && e.shiftKey && e.key === "A") {
+            const adminBtn = document.getElementById("adminLink");
+            adminBtn.classList.toggle("hidden"); // Toggle visibility
+        }
+    });
+</script>
+
 </body>
 </html>
