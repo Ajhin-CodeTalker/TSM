@@ -49,11 +49,12 @@ def student_dashboard(request):
         try:
             profile = Profile.objects.get(user=user)
             if profile.is_approved_by_registrar:
-                account_status = "Approved by Registrar"
-            elif profile.is_verified_email:
-                account_status = "Pending Registrar Approval"
+                account_status = None  # No need to show anything
+            elif not profile.is_verified_email:
+                account_status = "Please verify your email to activate your account."
             else:
-                account_status = "Pending Email Verification"
+                account_status = "Your account is pending registrar approval."
+
         except Profile.DoesNotExist:
             profile = None
 
@@ -84,93 +85,77 @@ def student_dashboard(request):
 
 
 
-def generate_otp_code(length=6):
-    return "".join(str(random.randint(0,9)) for _ in range(length))
-
+# def generate_otp_code(length=6):
+#     return "".join(str(random.randint(0,9)) for _ in range(length))
 
 def register(request):
     if request.method == "POST":
         form = StudentRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            username = form.cleaned_data["username"]
-            email = form.cleaned_data["email"]
-            password = form.cleaned_data["password"]
-            first_name = form.cleaned_data["first_name"]
-            last_name = form.cleaned_data["last_name"]
-            student_number = form.cleaned_data["student_number"]
-            course = form.cleaned_data.get("course", "")
-            year_level = form.cleaned_data.get("year_level", "")
-            document = request.FILES.get("document")
+            user = User.objects.create_user(
+                username=form.cleaned_data["username"],
+                email=form.cleaned_data["email"],
+                password=form.cleaned_data["password"],
+                first_name=form.cleaned_data["first_name"],
+                last_name=form.cleaned_data["last_name"],
+                is_active=False  # user cannot login yet
+            )
 
-            #create inactive user
-            user = User.objects.create_user(username=username, 
-                                            email=email, 
-                                            password=password,
-                                            first_name = first_name,
-                                            last_name = last_name, 
-                                            is_active=False,
-                                            )
-            
-
-            # Attack Profile
-            # Allows for safer updating of the profile and only allowing to create once
             Profile.objects.create(
-                user = user,
-                student_number = student_number,
-                course = course,
-                year_level = year_level,
-                document = document,
-                submitted_at = timezone.now(),
-                is_verified_email = False,
-                is_approved_by_registrar = False
-
+                user=user,
+                student_number=form.cleaned_data["student_number"],
+                course=form.cleaned_data["course"],
+                year_level=form.cleaned_data["year_level"],
+                document=request.FILES.get("document"),
+                submitted_at=timezone.now(),
+                is_verified_email=True,  # always true since no OTP
+                is_approved_by_registrar=False
             )
 
-            """
-                # This line of code is at risk of having multiple integrity error if a profile is already existing with the same student number
+            # direct redirect to pending page
+            # login(request, user)  # temporary login to show the page
+            return redirect("core:waiting_status", user_id=user.id)
 
-            #attach profile
-           
-            profile = Profile.objects.get_or_create(user=user)
-
-            profile.student_number = student_number
-            profile.course = course
-            profile.year_level = year_level
-            profile.document = document
-            profile.submitted_at = timezone.now()
-            profile.is_verified_email = False
-            profile.is_approved_by_registrar = False
-            profile.save()
-
-            """
-            # Create OTP
-            code = generate_otp_code()
-            expires = timezone.now() + timedelta(minutes=10)
-            OTP.objects.create(user=user, code=code, expires_at=expires)
-
-            # send email
-            subject = "Your Verification Code"
-            message = f"Hi {username}, your OTP code is {code}. It expires in {expires}. Thank you"
-            from_email = settings.DEFAULT_FROM_EMAIL
-            recipient_list = [email]
-            # send_mail(subject, message, from_email,recipient_list, fail_silently=False)
-
-
-            # Redirect Block
-            request.session["verify_user_id"] = user.id # Storing the data from the user
-            messages.success(
-                request,"Registration Successful! Please verify your email using OTP"
-            )
-            return redirect("core:verify_otp")
-        
         else:
             print("Form Errors:", form.errors)
-        
+
     else:
         form = StudentRegistrationForm()
-        #allows to always return a response (for GET or invalid type of form)
+
     return render(request, "core/register.html", {"form": form})
+
+
+@login_required
+def waiting_for_approval(request):
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        profile = None
+
+    # Handle states
+    if profile is None:
+        messages.warning(request, "Your account has been created but your profile is incomplete or missing.")
+    else:
+        if profile.is_verified_email and not profile.is_approved_by_registrar:
+            messages.info(request, "Your email is verified! Your account is now waiting for registrar approval.")
+        elif not profile.is_verified_email:
+            messages.warning(request, "Please verify your email to continue.")
+        elif profile.is_approved_by_registrar:
+            messages.success(request, "Your account has already been approved!")
+
+    return render(request, "core/waiting_for_approval.html", {
+        "profile": profile,
+    })
     
+def waiting_status(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    profile = get_object_or_404(Profile, user=user)
+
+    context = {
+        "student": user,
+        "profile": profile,
+    }
+    return render(request, "core/waiting_status.html", context)
 # THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
     """
@@ -201,12 +186,9 @@ def login_view(request):
             # Student login
             try:
                 profile = user.profile
-                if not profile.is_verified_email:
-                    messages.warning(request, "Please verify your email first.")
-                    return redirect("core:verify_otp")
-                elif not profile.is_approved_by_registrar:
+                if not profile.is_approved_by_registrar:
                     messages.info(request, "Your account is pending registrar approval.")
-                    return redirect("core:pending_approval")
+                    return redirect("core:waiting_for_approval")
             except Exception:
                 pass
 
@@ -231,62 +213,62 @@ def logout_view(request):
 
 
 
-def verify_otp(request):
-    """
-    request session 
+# def verify_otp(request):
+#     """
+#     request session 
     
-    * allows to get for approval before finalization of the account
-    * create a verification of legitimacy of being a student of the campus
-    * registrar will track documents before approving the account
-    """
+#     * allows to get for approval before finalization of the account
+#     * create a verification of legitimacy of being a student of the campus
+#     * registrar will track documents before approving the account
+#     """
 
-    user_id = request.session.get("verify_user_id")
-    if not user_id:
-        return redirect("core:register")
+#     user_id = request.session.get("verify_user_id")
+#     if not user_id:
+#         return redirect("core:register")
 
-    user = get_object_or_404(User, id=user_id)
+#     user = get_object_or_404(User, id=user_id)
 
-    if request.method == "POST":
-        form = OTPForm(request.POST)
+#     if request.method == "POST":
+#         form = OTPForm(request.POST)
 
-        if form.is_valid():
-            code = form.cleaned_data["code"].strip()
+#         if form.is_valid():
+#             code = form.cleaned_data["code"].strip()
 
-            # check last unexpired OTP
-            otp_qs = OTP.objects.filter(user=user, code=code).order_by("-created_at")
+#             # check last unexpired OTP
+#             otp_qs = OTP.objects.filter(user=user, code=code).order_by("-created_at")
 
-            if not otp_qs.exists():
-                form.add_error("code", "Invalid code")
+#             if not otp_qs.exists():
+#                 form.add_error("code", "Invalid code")
 
-            else:
-                otp = otp_qs.first()
+#             else:
+#                 otp = otp_qs.first()
 
-                if otp.is_expired():
-                    form.add_error("code", "Code expired. Request a new Code!")
+#                 if otp.is_expired():
+#                     form.add_error("code", "Code expired. Request a new Code!")
 
-                else:
-                    # Mark profile as verified
-                    profile = user.profile
-                    profile.is_verified_email = True
-                    profile.save()
+#                 else:
+#                     # Mark profile as verified
+#                     profile = user.profile
+#                     profile.is_verified_email = True
+#                     profile.save()
 
-                    # Activate the account so login will work
-                    user.is_active = True
-                    user.save()
+#                     # Activate the account so login will work
+#                     user.is_active = True
+#                     user.save()
 
-                    # Remove all OTPs for this user
-                    OTP.objects.filter(user=user).delete()
+#                     # Remove all OTPs for this user
+#                     OTP.objects.filter(user=user).delete()
 
-                    # Log the user in
-                    login(request, user)
+#                     # Log the user in
+#                     login(request, user)
 
-                    # Send to pending approval page
-                    return redirect("core:pending_approval")
+#                     # Send to pending approval page
+#                       return redirect("core:waiting_for_approval")
 
-    else:
-        form = OTPForm()
+#     else:
+#         form = OTPForm()
 
-    return render(request, "core/verify_otp.html", {"form": form, "email": user.email})
+#     return render(request, "core/verify_otp.html", {"form": form, "email": user.email})
 
 
 
@@ -297,7 +279,13 @@ def pending_approval(request):
     """
 
     #after verification, show pending screen until registrar approves
-    return render(request, "core/pending_approval.html")
+    is_approved = False
+    if request.user.is_authenticated:
+        try:
+            is_approved = request.user.profile.is_approved_by_registrar
+        except Profile.DoesNotExist:
+            is_approved = False
+    return render(request, "core/pending_approval.html", {"is_approved": is_approved})
 
 # registrar can view the list of pending verifications
 # but this will required the login for the staff
@@ -308,7 +296,8 @@ def staff_check(user):
 
 @user_passes_test(staff_check)
 def approval_list(request):
-    profiles = Profile.objects.filter(is_verified_email=True, is_approved_by_registrar=False)
+    # display all profiles that have been submitted and are not yet approved yet
+    profiles = Profile.objects.filter(is_approved_by_registrar=False).order_by('-submitted_at')
     return render(request, "core/approval_list.html", {"profiles": profiles})
 
 @user_passes_test(staff_check)
@@ -316,14 +305,22 @@ def approve_profile(request, profile_id):
     profile = get_object_or_404(Profile, id=profile_id)
     profile.is_approved_by_registrar = True
     profile.save()
-    # sending a mail for notifying as approved account
+
+    # activate the user account so they can login
+    user = profile.user
+    user.is_active = True
+    user.save()
+
+    # send notification
     send_mail(
         "Account Approved",
-        f"Hello {profile.user.username}, you account has been approved by the Registrar",
+        f"Hello {profile.user.get_full_name() or profile.user.username}, your account has been approved by the registrar. You can now login",
         settings.DEFAULT_FROM_EMAIL,
         [profile.user.email],
         fail_silently=True,
     )
+
+    messages.success(request, f"Approved {profile.user.get_full_name() or profile.user.username}")
     return redirect("core:approval_list")
 
 @user_passes_test(staff_check)
@@ -341,7 +338,7 @@ def reject_profile(request, profile_id):
         "Account Rejected",
         f"Hello {profile.user.username}, your account registration has been rejected by the Registrar.",
         settings.DEFAULT_FROM_EMAIL,
-        {profile.user.email},
+        [profile.user.email],
         fail_silently=True,
     )
     return redirect("core:approval_list")
@@ -351,7 +348,7 @@ def reject_profile(request, profile_id):
 def is_registrar(user):
     return user.is_staff # can be adjust to have a custom role system
 
-# @login_required
+@login_required
 def student_appointments(request):
 
     user = request.user

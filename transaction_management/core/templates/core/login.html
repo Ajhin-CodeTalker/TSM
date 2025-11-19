@@ -8,6 +8,13 @@
     <title>Login Page</title>
     <link rel="stylesheet" href="{% static 'core/Style.css' %}">
     <script src="https://kit.fontawesome.com/cda339b82d.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* 🔒 Hide registrar link by default */
+        .secret-link {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="login">
@@ -17,7 +24,7 @@
 
             <div class="inputBox">
                 <i class="fa-solid fa-user"></i>
-                <input type="text" name="email" placeholder="Email" required>
+                <input id="emailInput" type="text" name="email" placeholder="Email" autocomplete="off" required>
             </div>
 
             <div class="inputBox">
@@ -30,12 +37,35 @@
             </div>
 
             <div class="registration">
-                <p>Don’t have an account? <a href="{% url 'core:register' %}"><b>Sign up</b></a></p>
-                <p>Registrar? <a href="{% url 'core:registrar_register' %}"><b>Register here</b></a></p>
+                <p>Don’t have an account? 
+                    <a href="{% url 'core:register' %}"><b>Sign up</b></a>
+                </p>
+
+                <!-- 🔒 This will be hidden unless secret code is typed -->
+                <p class="secret-link">
+                    Registrar?
+                    <a href="{% url 'core:registrar_register' %}"><b>Register here</b></a>
+                </p>
             </div>
-            
 
         </form>
     </div>
+
+    <!-- 🔑 SECRET TRIGGER SCRIPT -->
+    <script>
+        const emailInput = document.getElementById("emailInput");
+        const secretLink = document.querySelector(".secret-link");
+
+        const trigger = "@registrar";  // <-- change secret code here
+
+        emailInput.addEventListener("input", () => {
+            if (emailInput.value.includes(trigger)) {
+                secretLink.style.display = "block";   // show
+            } else {
+                secretLink.style.display = "none";    // hide
+            }
+        });
+    </script>
+
 </body>
 </html>

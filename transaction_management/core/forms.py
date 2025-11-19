@@ -4,7 +4,7 @@ from .models import Profile
 from django.core.exceptions import ValidationError
 from .models import Appointment
 from .models import CertificateRequest
-
+from django.contrib.auth.forms import AuthenticationForm
 
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
@@ -130,7 +130,16 @@ class CertificateRequestForm(forms.ModelForm):
             'purpose': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter purpose for this certificate.'}),
         }
 
-
+# Custom login form (Django-compatible)
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(
+        label="Username",
+        widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control"})
+    )
 
 
 class RegistrarRegistrationForm(forms.ModelForm):

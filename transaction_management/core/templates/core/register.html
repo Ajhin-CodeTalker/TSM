@@ -8,50 +8,148 @@
     <title>Sign Up Page</title>
     <link rel="stylesheet" href="{% static 'core/Style.css' %}">
     <script src="https://kit.fontawesome.com/cda339b82d.js" crossorigin="anonymous"></script>
+
+    <!-- =======================
+         POPUP ERROR + AUTOFILL FIX
+         ======================= -->
+    <style>
+        /* Popup background overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* Popup window */
+        .popup-box {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0px 0px 20px rgba(255, 0, 0, 0.4);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .popup-box h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #ff4d4d;
+        }
+
+        /* Error list styling */
+        .popup-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .close-popup {
+            margin-top: 15px;
+            width: 100%;
+            padding: 8px;
+            background: #ff4d4d;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .close-popup:hover {
+            background: #d93636;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* =======================
+           AUTOFILL FIX (correct placement)
+           ======================= */
+        input:-webkit-autofill,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:hover {
+            -webkit-box-shadow: 0 0 0 1000px #1e1e1e inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+        }
+    </style>
+
 </head>
 <body>
+
+    <!-- =======================
+         POPUP ERROR (Show only on error)
+         ======================= -->
+    {% if form.errors %}
+    <div id="errorPopup" class="popup-overlay">
+        <div class="popup-box">
+            <h3>Form Errors:</h3>
+            <div class="popup-errors">
+                {{ form.errors }}
+            </div>
+            <button class="close-popup" onclick="closePopup()">Close</button>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="login">
-        
+
         <form id="registrationForm"
               method="post"
               action="{% url 'core:register' %}"
               enctype="multipart/form-data">
-            
+
             {% csrf_token %}
             <h2>Sign Up</h2>
 
             <!-- FIRST NAME -->
             <div class="names left">
-                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="first_name" placeholder="First Name" autocomplete="off"
+                value="{{ form.data.first_name }}" required>
             </div>
 
             <!-- LAST NAME -->
             <div class="names right">
-                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input type="text" name="last_name" placeholder="Last Name" autocomplete="off"
+                value="{{ form.data.last_name }}" required>
             </div>
 
             <!-- USERNAME -->
             <div class="inputBox">
                 <i class="fa-solid fa-user"></i>
-                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="username" placeholder="Username" autocomplete="off"
+                value="{{ form.data.username }}" required>
             </div>
 
             <!-- EMAIL -->
             <div class="inputBox">
                 <i class="fa-solid fa-envelope"></i>
-                <input type="email" name="email" placeholder="Email (@cvsu.edu.ph)" required>
+                <input type="email" name="email" placeholder="Email (@cvsu.edu.ph)" autocomplete="off"
+                value="{{ form.data.email }}" required>
             </div>
 
             <!-- STUDENT NUMBER -->
             <div class="inputBox">
                 <i class="fa-solid fa-hashtag"></i>
-                <input type="text" name="student_number" placeholder="Student Number" required>
+                <input type="text" name="student_number" placeholder="Student Number" autocomplete="off"
+                value="{{ form.data.student_number }}" required>
             </div>
 
             <!-- COURSE -->
             <div class="inputBox">
                 <i class="fa-solid fa-book"></i>
-                <input type="text" name="course" placeholder="Course" required>
+                <input type="text" name="course" placeholder="Course" autocomplete="off"
+                value="{{ form.data.course }}" required>
             </div>
 
             <!-- YEAR LEVEL -->
@@ -59,10 +157,10 @@
                 <i class="fa-solid fa-layer-group"></i>
                 <select name="year_level" required>
                     <option value="">Select Year Level</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
+                    <option value="1st Year" {% if form.data.year_level == "1st Year" %}selected{% endif %}>1st Year</option>
+                    <option value="2nd Year" {% if form.data.year_level == "2nd Year" %}selected{% endif %}>2nd Year</option>
+                    <option value="3rd Year" {% if form.data.year_level == "3rd Year" %}selected{% endif %}>3rd Year</option>
+                    <option value="4th Year" {% if form.data.year_level == "4th Year" %}selected{% endif %}>4th Year</option>
                 </select>
             </div>
 
@@ -100,7 +198,7 @@
                 <p>Already have an account? <a href="{% url 'core:login' %}"><b>Sign in</b></a></p>
             </div>
 
-        </form>    
+        </form>
     </div>
 
 <script>
@@ -114,6 +212,12 @@
         const input = document.getElementById("confirmPass");
         input.type = input.type === "password" ? "text" : "password";
     });
+
+    // CLOSE POPUP
+    function closePopup() {
+        const popup = document.getElementById("errorPopup");
+        if (popup) popup.style.display = "none";
+    }
 </script>
 
 </body>

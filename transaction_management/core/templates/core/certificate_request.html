@@ -1,83 +1,98 @@
-{% extends "base.html" %}   {# ✅ Use the new unified base layout like student_appointment.html #}
-
-<!-- Student Navbar  -->
-
 
 {% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #f7d348, #2ea7e0);
+  }
+
+  .cert-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+
+  .form-section {
+    background: #ffefb5;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+
+  .form-section p label {
+    font-weight: bold;
+  }
+
+  .form-section input,
+  .form-section select,
+  .form-section textarea {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  .submit-btn {
+    background: #1d5adb;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .submit-btn:hover {
+    background: #184cbc;
+  }
+
+  .requests-box {
+    background: #cfe2f3;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background: #f3f3f3;
+    font-weight: bold;
+  }
+</style>
+
 <nav style="background-color: #004d00; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
   <a href="{% url 'core:student_dashboard' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Home</a>
   <a href="{% url 'core:student_appointments' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Appointment</a>
-  <a href="{% url 'core:logout' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;"> Logout</a>
+  <a href="{% url 'core:logout' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Logout</a>
 </nav>
 
-<div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8 mt-8">
-  <h2 class="text-2xl font-semibold mb-4 text-green-800 text-center">Request a Certificate</h2>
+<div class="cert-container">
+  <h1 style="text-align:center; margin-top:0;">Certificate Request</h1>
 
-  <!-- ✅ Django success/error/info messages -->
-  {% if messages %}
-    {% for message in messages %}
-      <div style="
-        background: #e8f5e9;
-        border: 1px solid #81c784;
-        color: #2e7d32;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 6px;">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
+  <div class="form-section">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="submit-btn">Submit Request</button>
+    </form>
+  </div>
 
-  <!-- 📋 Certificate Request Form -->
-  <form method="POST" enctype="multipart/form-data" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" style="
-      background-color: #006400;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;">
-      Submit Request
-    </button>
-  </form>
-
-  <!-- 🕓 Previous Requests Table -->
-  <h3 class="text-xl font-semibold mt-6 mb-3 text-green-800 text-center">Your Previous Requests</h3>
-  <table style="width: 100%; border-collapse: collapse; text-align: center;">
-    <thead>
-      <tr style="background-color: #004d00; color: white;">
-        <th style="padding: 10px;">Type</th>
-        <th style="padding: 10px;">Purpose</th>
-        <th style="padding: 10px;">Date</th>
-        <th style="padding: 10px;">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for request in previous_requests %}
-      <tr style="border-bottom: 1px solid #ddd;">
-        <td style="padding: 8px;">{{ request.certificate_type }}</td>
-        <td style="padding: 8px;">{{ request.purpose }}</td>
-        <td style="padding: 8px;">{{ request.requested_at|date:"M d, Y H:i" }}</td>
-        <td style="padding: 8px;">
-          {% if request.status == 'Approved' %}
-            <span style="color: green; font-weight: bold;">Approved</span>
-          {% elif request.status == 'Rejected' %}
-            <span style="color: red; font-weight: bold;">Rejected</span>
-          {% elif request.status == 'Released' %}
-            <span style="color: blue; font-weight: bold;">Released</span>
-          {% else %}
-            <span style="color: orange; font-weight: bold;">Pending</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" style="padding: 10px; color: gray;">No previous requests found.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
 {% endblock %}

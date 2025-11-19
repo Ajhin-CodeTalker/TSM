@@ -10,13 +10,13 @@ urlpatterns = [
     # THESE ARE FOR WAITING AREA
     path("register/", views.register, name="register"),
     path("login/", views.login_view, name="login"),
-    path("verify/", views.verify_otp, name="verify_otp"),
+    # path("verify/", views.verify_otp, name="verify_otp"),
 
     # LOGOUT
     path('logout/', views.login_view, name='logout'),
 
     # THESE ARE FOR APPROVALS
-    path("pending/", views.pending_approval, name="pending_approval"),
+    path("waiting-for-approval/", views.waiting_for_approval, name="waiting_for_approval"),
     path("approvals/", views.approval_list, name="approval_list"),
     path("approvals/approve/<int:profile_id>/", views.approve_profile, name="approve_profile"),
     path("approvals/reject/<int:profile_id>/", views.reject_profile, name="reject_profile"),
@@ -35,12 +35,14 @@ urlpatterns = [
     path("registrar/certificates/update/<int:cert_id>/<str:status>/", views.update_certificate_status, name="update_certificate_status"),
 
 
+
     # THESE ARE FOR REGISTRAR
     path("registrar/register/", views.registrar_register, name="registrar_register"),
 
     # THESE ARE THE STUDENT PATH
     path('student/dashboard/', views.student_dashboard, name="student_dashboard"),
 
+    path("waiting/<int:user_id>/", views.waiting_status, name="waiting_status"),
 
 
 

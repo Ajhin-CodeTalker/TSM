@@ -1,35 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Account Pending Approval</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f3f4f6;
-            margin-top: 10%;
-        }
-        .box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            display: inline-block;
-        }
-        h2 { color: #2563eb; }
-        a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h2>⏳ Registration Pending</h2>
-        <p>Your account has been submitted for approval. Once approved, you can log in.</p>
-        <a href="{% url 'login' %}">Return to Login</a>
+{% block navbar %}
+
+<!-- 🌐 TOP BAR: Logo • Title • User Info -->
+<div class="hidden md:flex items-center justify-between bg-white px-8 py-4 shadow-sm border-b">
+
+    <!-- LEFT: Logo + Titles -->
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center">
+            <i class="fas fa-file-alt"></i>
+        </div>
+
+        <div>
+            <h1 class="text-lg font-semibold text-gray-800">Transaction Management System</h1>
+            <p class="text-xs text-gray-500 -mt-1">Registrar Document Management Platform</p>
+        </div>
     </div>
-</body>
-</html>
+
+    <!-- RIGHT: User Name + Role + Avatar -->
+    <div class="flex items-center gap-3">
+        <div class="text-right leading-tight">
+            <p class="font-semibold text-gray-800">Maria Santos</p>
+            <p class="text-xs text-gray-500 -mt-1">Senior Registrar</p>
+        </div>
+
+        <div class="w-10 h-10 rounded-full bg-blue-600 text-white 
+                    flex items-center justify-center font-semibold">
+            MS
+        </div>
+    </div>
+</div>
+
+
+<!-- 🖥 DESKTOP NAV (matches screenshot layout under header) -->
+<nav class="hidden md:flex space-x-10 text-gray-600 font-medium px-8 py-3 bg-white border-b shadow-sm">
+
+    <a href="{% url 'core:registrar_dashboard' %}" 
+       class="hover:text-blue-600">
+       Home
+    </a>
+
+    <a href="{% url 'core:registrar_appointments' %}" 
+       class="hover:text-blue-600">
+       Appointments
+    </a>
+
+    <a href="{% url 'core:registrar_certificates' %}" 
+       class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">
+       Certificates
+    </a>
+
+    <a href="{% url 'core:approval_list' %}" 
+       class="hover:text-blue-600">
+       Pending Accounts
+    </a>
+
+    <a href="{% url 'core:logout' %}" 
+       class="hover:text-blue-600">
+       Logout
+    </a>
+</nav>
+
+
+
+
+<!-- 📱 MOBILE NAV WRAPPER -->
+<div class="md:hidden bg-white border-b shadow-sm">
+    <div class="flex justify-between items-center px-4 py-3">
+        <span class="text-gray-700 font-semibold text-lg">Menu</span>
+
+        <!-- Hamburger Button -->
+        <button id="mobileMenuBtn" class="text-gray-600 text-3xl focus:outline-none">
+            ☰
+        </button>
+    </div>
+
+    <!-- Mobile Dropdown -->
+    <div id="mobileMenu" class="hidden flex-col px-4 pb-4 space-y-3 text-gray-700">
+
+        <a href="{% url 'core:registrar_dashboard' %}" class="block hover:text-blue-600">Home</a>
+
+        <a href="{% url 'core:registrar_appointments' %}" class="block hover:text-blue-600">
+            Appointments
+        </a>
+
+        <a href="{% url 'core:registrar_certificates' %}" 
+           class="block text-blue-600 font-semibold">
+           Certificates
+        </a>
+
+        <a href="{% url 'core:approval_list' %}" class="block hover:text-blue-600">
+            Pending Accounts
+        </a>
+
+        <a href="{% url 'core:logout' %}" class="block hover:text-blue-600">Logout</a>
+    </div>
+</div>
+
+
+<!-- JS TOGGLE (mobile) -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("mobileMenuBtn");
+    const menu = document.getElementById("mobileMenu");
+
+    btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+    });
+});
+</script>
+
+{% endblock %}

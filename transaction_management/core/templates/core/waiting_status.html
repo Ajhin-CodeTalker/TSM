@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg text-center">
+    {% if profile.is_approved_by_registrar %}
+    <h2 class="text-green-700 font-bold text-xl mb-3">Your account is approved!</h2>
+    <p class="text-gray-600 mb-4">You may now log in to your student dashboard.</p>
+
+    <a href="{% url 'core:login' %}"
+       class="px-5 py-2 bg-green-600 text-white rounded-lg">
+        Proceed to Login
+    </a>
+
+    {% else %}
+        <h2 class="text-yellow-700 font-bold text-xl mb-3">Your account is under review</h2>
+        <p class="text-gray-600 mb-4">Registrar is reviewing your details and uploaded documents.</p>
+        <p class="text-sm text-gray-500">Refresh this page to check your approval status.</p>
+    {% endif %}
+
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Account Approval Status</h2>
+
+    <p class="text-gray-600 mb-6">
+        Hello <strong>{{ student.first_name }} {{ student.last_name }}</strong>, thank you for registering!
+        Your account is currently being reviewed by the Registrar's Office.
+    </p>
+
+    <div class="mb-6">
+        {% if profile.is_approved_by_registrar %}
+            <p class="text-green-600 font-semibold text-lg">✅ Your account has been approved!</p>
+            <a href="{% url 'core:login' %}"
+               class="mt-4 inline-block bg-green-600 text-white px-5 py-2 rounded-lg">
+               Proceed to Login
+            </a>
+
+        {% else %}
+            <p class="text-yellow-600 font-semibold text-lg">⏳ Waiting for Registrar Approval...</p>
+            <p class="text-gray-500 mt-2">Please check back later.</p>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 bg-gray-100 p-4 rounded-lg text-left">
+        <h3 class="font-semibold mb-2">Submitted Information</h3>
+
+        <p><strong>Student No:</strong> {{ profile.student_number }}</p>
+        <p><strong>Course:</strong> {{ profile.course }}</p>
+        <p><strong>Year Level:</strong> {{ profile.year_level }}</p>
+        <p><strong>Submitted:</strong> {{ profile.submitted_at|date:"M d, Y" }}</p>
+
+        {% if profile.document %}
+            <p class="mt-2">
+                <strong>Document:</strong>
+                <a href="{{ profile.document.url }}" class="text-blue-600 underline" target="_blank">
+                    View File
+                </a>
+            </p>
+        {% endif %}
+    </div>
+
+    <button onclick="location.reload()"
+            class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg">
+        Refresh Status
+    </button>
+
+</div>
+{% endblock %}

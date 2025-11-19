@@ -1,0 +1,71 @@
+<div class="status-steps">
+    <div class="step {{ step1_state }}">
+        <div class="circle">1</div>
+        <p>Email Verified</p>
+    </div>
+
+    <div class="connector {{ step2_state }}"></div>
+
+    <div class="step {{ step2_state }}">
+        <div class="circle">2</div>
+        <p>Registrar Review</p>
+    </div>
+
+    <div class="connector {{ step3_state }}"></div>
+
+    <div class="step {{ step3_state }}">
+        <div class="circle">3</div>
+        <p>Approved</p>
+    </div>
+</div>
+
+<style>
+.status-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.step {
+    text-align: center;
+    font-weight: bold;
+    color: #888;
+}
+
+.step .circle {
+    width: 40px;
+    height: 40px;
+    background: #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    font-size: 18px;
+}
+
+.step.active .circle {
+    background: #007bff;
+    color: #fff;
+}
+
+.step.done .circle {
+    background: #28a745;
+    color: white;
+}
+
+.connector {
+    width: 80px;
+    height: 5px;
+    background: #ccc;
+}
+
+.connector.active {
+    background: #007bff;
+}
+
+.connector.done {
+    background: #28a745;
+}
+</style>

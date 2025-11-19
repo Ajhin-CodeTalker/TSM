@@ -2,14 +2,92 @@
 <html>
 <head>
     <title>Registrar Registration</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #ffdd57, #4db8ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-wrapper {
+            width: 90%;
+            max-width: 550px;
+            background: #ffffff;
+            padding: 40px 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        form p {
+            margin-bottom: 18px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #bbb;
+            font-size: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            background: #1f6feb;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #1355c7;
+        }
+
+        .login-link {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            font-weight: 700;
+            color: #1355c7;
+        }
+    </style>
 </head>
+
 <body>
-    <h2>Registrar Registration</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'core:login' %}">Login here</a></p>
+
+    <div class="form-wrapper">
+        <h2>Registrar Registration</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Register</button>
+        </form>
+
+        <p class="login-link">
+            Already have an account? <a href="{% url 'core:login' %}">Login here</a>
+        </p>
+    </div>
+
 </body>
 </html>

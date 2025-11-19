@@ -1,0 +1,63 @@
+/* Make page center correctly */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;   /* horizontal center */
+    align-items: center;       /* vertical center */
+    background: linear-gradient(135deg, #ffdd57, #4db8ff);
+}
+
+/* Card container */
+.container {
+    width: 100%;
+    max-width: 600px;     /* Perfect width for desktop */
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* Input styling */
+.container input, 
+.container select, 
+.container textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #ccc;
+    border-radius: 10px;
+    outline: none;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+/* Button */
+.container button {
+    width: 100%;
+    background: #1e63e9;
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 17px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.container button:hover {
+    background: #0d4dc9;
+}
+
+/* Login section */
+.container p {
+    text-align: center;
+    margin-top: 10px;
+}
