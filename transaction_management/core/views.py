@@ -24,12 +24,12 @@ from .forms import RegistrarRegistrationForm
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.contrib.auth import logout
+from django.views.decorators.cache import never_cache
 
 
 
 
-
-
+@never_cache
 @login_required
 def student_dashboard(request):
     """
@@ -408,7 +408,7 @@ def student_appointments(request):
 
     })
 
-
+@never_cache
 # @user_passes_test(is_registrar)
 def registrar_appointments(request):
     appointments = Appointment.objects.all().order_by("-created_at")
@@ -424,7 +424,7 @@ def update_appointment_status(request, appointment_id, status):
     return redirect("core:registrar_appointments")
 
 
-
+@never_cache
 @login_required(login_url='/login/')
 @user_passes_test(is_registrar, login_url='/login/')
 def registrar_dashboard(request):
@@ -474,7 +474,7 @@ def registrar_dashboard(request):
 
     return render(request, "core/registrar_website.html", context)
 
-
+@never_cache
 # REGISTRAR: Allows to view ll certificate request
 def registrar_certificates(request):
     certificates = CertificateRequest.objects.all().order_by("-requested_at")

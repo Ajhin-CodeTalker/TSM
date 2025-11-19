@@ -1,3 +1,5 @@
+{% exte}
+
 {% block navbar %}
 
 <!-- 🌐 TOP BAR: Logo • Title • User Info -->
@@ -53,10 +55,6 @@
        Pending Accounts
     </a>
 
-    <a href="{% url 'core:logout' %}" 
-       class="hover:text-blue-600">
-       Logout
-    </a>
 </nav>
 
 
@@ -90,8 +88,6 @@
         <a href="{% url 'core:approval_list' %}" class="block hover:text-blue-600">
             Pending Accounts
         </a>
-
-        <a href="{% url 'core:logout' %}" class="block hover:text-blue-600">Logout</a>
     </div>
 </div>
 

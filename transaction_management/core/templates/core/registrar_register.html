@@ -1,93 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Registrar Registration</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Registration</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body, html { height:100%; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: linear-gradient(135deg,#F6E96B 0%,#2E7D32 100%);
+      display:flex; justify-content:center; align-items:center;
+      padding:20px;
+    }
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: "Poppins", sans-serif;
-            background: linear-gradient(135deg, #ffdd57, #4db8ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+    .registration-container {
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.15);
+      padding:48px;
+      width:100%;
+      max-width:500px;
+      animation:fadeInUp 0.6s ease-out;
+    }
 
-        .form-wrapper {
-            width: 90%;
-            max-width: 550px;
-            background: #ffffff;
-            padding: 40px 35px;
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
+    @keyframes fadeInUp {
+      from {opacity:0; transform:translateY(30px);}
+      to {opacity:1; transform:translateY(0);}
+    }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 30px;
-            font-weight: 700;
-        }
+    .logo-section { text-align:center; margin-bottom:32px; }
+    .logo-circle {
+      width:80px; height:80px; border-radius:50%;
+      background:linear-gradient(135deg,#F6E96B 0%,#2E7D32 100%);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 16px;
+      box-shadow:0 4px 12px rgba(46,125,50,0.2);
+    }
+    .logo-text { font-size:28px; font-weight:bold; color:white; }
+    h1 { color:#2E7D32; font-size:28px; font-weight:700; margin-bottom:8px; }
+    .subtitle { color:#666; font-size:14px; }
 
-        form p {
-            margin-bottom: 18px;
-        }
+    form { display:grid; grid-template-columns:1fr; gap:20px; }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #bbb;
-            font-size: 15px;
-        }
+    .field-pair {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
 
-        button {
-            width: 100%;
-            padding: 14px;
-            font-size: 17px;
-            background: #1f6feb;
-            color: white;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-            font-weight: 600;
-        }
+    label { display:block; color:#333; font-weight:600; margin-bottom:6px; font-size:14px; }
+    input { width:100%; padding:12px 14px; border-radius:12px; border:2px solid #e0e0e0; background:#fafafa; font-size:15px; transition:all 0.3s ease; }
+    input:hover { border-color:#F6E96B; background:#fff; }
+    input:focus { outline:none; border-color:#2E7D32; background:#fff; box-shadow:0 0 0 4px rgba(46,125,50,0.1); }
 
-        button:hover {
-            background: #1355c7;
-        }
+    .password-strength { height:4px; background:#e0e0e0; border-radius:2px; margin-top:6px; overflow:hidden; }
+    .password-strength-bar { height:100%; width:0%; background:#2E7D32; transition:width 0.3s ease; border-radius:2px; }
 
-        .login-link {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 14px;
-        }
+    .register-button {
+      width:100%; padding:16px; background:#2E7D32; color:white; border:none; border-radius:12px;
+      font-size:16px; font-weight:700; cursor:pointer; transition:all 0.3s ease;
+      position:relative; overflow:hidden;
+    }
+    .register-button:hover { background:#1B5E20; transform:translateY(-2px); box-shadow:0 8px 20px rgba(46,125,50,0.3); }
 
-        .login-link a {
-            font-weight: 700;
-            color: #1355c7;
-        }
-    </style>
+    .login-link { text-align:center; margin-top:24px; font-size:14px; color:#666; }
+    .login-link a { color:#2E7D32; font-weight:600; text-decoration:none; transition:color 0.3s ease; }
+    .login-link a:hover { color:#1B5E20; text-decoration:underline; }
+
+    .error-message { color:#d32f2f; font-size:12px; margin-top:6px; display:none; }
+    .success-message { background:#e8f5e9; color:#2E7D32; padding:12px 16px; border-radius:8px; margin-bottom:20px; font-size:14px; display:none; border-left:4px solid #2E7D32; }
+
+    @media(max-width:480px) {
+      .registration-container { padding:24px 20px; }
+      h1 { font-size:22px; }
+      .logo-circle { width:64px; height:64px; }
+      .logo-text { font-size:24px; }
+      .field-pair { grid-template-columns:1fr; gap:12px; }
+    }
+  </style>
 </head>
-
 <body>
-
-    <div class="form-wrapper">
-        <h2>Registrar Registration</h2>
-
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Register</button>
-        </form>
-
-        <p class="login-link">
-            Already have an account? <a href="{% url 'core:login' %}">Login here</a>
-        </p>
+  <div class="registration-container">
+    <div class="logo-section">
+      <div class="logo-circle"><span class="logo-text">R</span></div>
+      <h1>Registrar Registration</h1>
+      <p class="subtitle">Create your account to get started</p>
     </div>
 
+    <div class="success-message" id="success-message">Registration successful! Welcome aboard.</div>
+
+    <form id="registration-form" method="POST">
+      {% csrf_token %}
+
+      <div class="field-pair">
+        <div>
+          <label for="username">Username</label>
+          {{ form.username }}
+          <div class="error-message" id="username-error">Username is required</div>
+        </div>
+        <div>
+          <label for="email">Email</label>
+          {{ form.email }}
+          <div class="error-message" id="email-error">Enter a valid email</div>
+        </div>
+      </div>
+
+      <div class="field-pair">
+        <div>
+          <label for="password">Password</label>
+          {{ form.password }}
+          <div class="password-strength"><div id="strength-bar" class="password-strength-bar"></div></div>
+          <div class="error-message" id="password-error">Password must be at least 6 characters</div>
+        </div>
+        <div>
+          <label for="confirm_password">Confirm Password</label>
+          {{ form.confirm_password }}
+          <div class="error-message" id="confirm-error">Passwords do not match</div>
+        </div>
+      </div>
+
+      <div class="field-pair">
+        <div>
+          <label for="first_name">First Name</label>
+          {{ form.first_name }}
+          <div class="error-message" id="first-name-error">First name is required</div>
+        </div>
+        <div>
+          <label for="last_name">Last Name</label>
+          {{ form.last_name }}
+          <div class="error-message" id="last-name-error">Last name is required</div>
+        </div>
+      </div>
+
+      <button type="submit" class="register-button">Register</button>
+    </form>
+
+    <p class="login-link">
+      Already have an account? <a href="{% url 'core:login' %}">Login here</a>
+    </p>
+  </div>
+
+  <script>
+    const form = document.getElementById('registration-form');
+    const passwordInput = form.querySelector('input[name="password"]');
+    const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
+    const strengthBar = document.getElementById('strength-bar');
+    const successMessage = document.getElementById('success-message');
+
+    if(passwordInput){
+      passwordInput.addEventListener('input', function(){
+        let val = passwordInput.value;
+        let score = 0;
+        if(val.length >= 6) score += 25;
+        if(val.length >= 10) score += 25;
+        if(/[A-Z]/.test(val)) score += 25;
+        if(/[0-9]/.test(val)) score += 25;
+        score = Math.min(100,score);
+        strengthBar.style.width = score+'%';
+        if(score<=25) strengthBar.style.background='#d32f2f';
+        else if(score<=50) strengthBar.style.background='#ff9800';
+        else if(score<=75) strengthBar.style.background='#fdd835';
+        else strengthBar.style.background='#2E7D32';
+      });
+    }
+
+    form.addEventListener('submit', function(e){
+      let valid=true;
+      document.querySelectorAll('.error-message').forEach(msg=>msg.style.display='none');
+
+      if(passwordInput && confirmPasswordInput && passwordInput.value!==confirmPasswordInput.value){
+        e.preventDefault();
+        document.getElementById('confirm-error').style.display='block';
+        valid=false;
+      }
+
+      if(valid && successMessage){
+        successMessage.style.display='block';
+        setTimeout(()=>{successMessage.style.display='none';},5000);
+      }
+    });
+  </script>
 </body>
 </html>

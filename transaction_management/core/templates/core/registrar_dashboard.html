@@ -25,33 +25,58 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-lg border-b-4 border-blue-600">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Academic Records System</h1>
-                        <p class="text-sm text-gray-600">Registrar Document Management Platform</p>
-                    </div>
+  <!-- Header -->
+<header class="bg-white shadow-lg border-b-4 border-blue-600">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- LEFT: Logo + Titles -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-sm font-medium text-gray-700">Maria Santos</p>
-                        <p class="text-xs text-gray-500">Senior Registrar</p>
-                    </div>
-                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        MS
-                    </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Academic Records System</h1>
+                    <p class="text-sm text-gray-600">Registrar Document Management Platform</p>
                 </div>
             </div>
+
+            <!-- RIGHT: User Info + Logout -->
+            <div class="flex items-center space-x-4">
+                <!-- User Name and Role -->
+                <div class="text-right">
+                    <p class="text-sm font-medium text-gray-700">Maria Santos</p>
+                    <p class="text-xs text-gray-500">Senior Registrar</p>
+                </div>
+
+                <!-- User Avatar -->
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    MS
+                </div>
+
+                <!-- Logout Button -->
+                <form action="{% url 'core:logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit"
+                        class="relative px-5 py-2 bg-red-500 text-white rounded-xl font-semibold
+                               shadow-lg hover:bg-red-600 transition transform hover:-translate-y-1
+                               focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 flex items-center gap-2">
+                        <span>Logout</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-13V5">
+                            </path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
         </div>
-    </header>
+    </div>
+</header>
+
 
     <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Navigation Tabs -->
