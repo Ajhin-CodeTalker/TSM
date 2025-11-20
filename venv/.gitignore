@@ -1,24 +1,22 @@
-# Python
-*.pyc
+# Python cache
 __pycache__/
-*.pyo
-*.pyd
-
-# Virtual Environment
-venv/
-ENV/
-env/
+*.py[cod]
 
 # Django
-*.sqlite3
-/db.sqlite3
-/media
-/staticfiles
+*.log
+db.sqlite3
+media/
 
-# IDEs / Editors
-.vscode/
-.idea/
+# Virtual environments
+venv/
+env/
 
 # OS files
 .DS_Store
-Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Tailwind build cache
+node_modules/

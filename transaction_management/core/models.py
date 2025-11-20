@@ -94,3 +94,7 @@ class CertificateRequest(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.certificate_type} ({self.status})"
+    
+class RegistrarProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=100, default="Registrar")

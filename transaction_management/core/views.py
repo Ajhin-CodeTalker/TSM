@@ -430,6 +430,7 @@ def update_appointment_status(request, appointment_id, status):
 def registrar_dashboard(request):
     today = date.today()
     month_start = today.replace(day=1)
+    
 
     pending_profiles = Profile.objects.filter(
         is_verified_email=True, is_approved_by_registrar=False

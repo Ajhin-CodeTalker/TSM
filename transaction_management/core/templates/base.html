@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Transaction Management System</title>
 
-    <!-- ✅ TailwindCSS CDN -->
+    <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -12,7 +12,8 @@
             font-family: 'Inter', Arial, sans-serif;
             background-color: #f7f9fc;
         }
-        /* Logout Button Styles (Canva style) */
+
+        /* Canva-style Logout Button */
         .logout-button {
             position: relative;
             padding: 10px 24px;
@@ -37,12 +38,6 @@
         }
         .logout-button:active {
             transform: scale(0.98);
-            box-shadow: 0 4px 8px rgba(229,62,62,0.3), 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .logout-button svg {
-            width: 18px;
-            height: 18px;
-            transition: transform 0.3s ease;
         }
         .logout-button:hover svg {
             transform: translateX(3px);
@@ -51,7 +46,7 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- 🎯 TOP HEADER -->
+    <!-- HEADER -->
     <header class="bg-white shadow-md border-b-2 border-blue-600">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
@@ -60,7 +55,7 @@
                 <div class="bg-blue-600 p-2 rounded-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                 </div>
                 <div>
@@ -69,51 +64,71 @@
                 </div>
             </div>
 
-            <!-- Profile + Logout Button -->
-            <div class="flex items-center space-x-4">
+            <!-- Profile + Logout -->
+            <div class="hidden md:flex items-center space-x-4">
                 <div class="text-right">
-                    <p class="text-sm font-medium text-gray-700">Maria Santos</p>
-                    <p class="text-xs text-gray-500">Senior Registrar</p>
+                    <p class="text-sm font-medium text-gray-700">
+                        {{ user.first_name }} {{ user.last_name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        {{ profile.role|default:"Registrar"}}
+                    </p>
                 </div>
+
                 <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    MS
+                    {{ initials }}
                 </div>
-                <!-- Logout Button (Canva style) -->
+
                 <form action="{% url 'core:logout' %}" method="post">
                     {% csrf_token %}
                     <button type="submit" class="logout-button">
                         Logout
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" 
-                             viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24" stroke-width="2">
                              <polyline points="16 17 21 12 16 7"></polyline>
                              <line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
                     </button>
                 </form>
             </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="nav-toggle" class="md:hidden p-2 rounded-lg border">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
         </div>
     </header>
 
-    <!-- 🧭 NAVIGATION BAR -->
+    <!-- NAVBAR -->
     <nav class="bg-white border-b shadow-sm">
-        <div class="max-w-7xl mx-auto flex space-x-8 px-6 py-3 text-gray-600 font-medium">
+        <div id="nav-menu" class="max-w-7xl mx-auto flex-col md:flex md:flex-row hidden md:flex space-x-8 px-6 py-3 text-gray-600 font-medium">
             {% block navbar %}
-            <!-- Default navbar IF not overwritten -->
             <a href="#" class="hover:text-blue-600">Dashboard</a>
             {% endblock %}
         </div>
     </nav>
 
-    <!-- 📌 MAIN CONTENT -->
+    <!-- MAIN CONTENT -->
     <main class="max-w-7xl mx-auto p-6">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- 🦶 FOOTER -->
+    <!-- FOOTER -->
     <footer class="text-center py-4 text-gray-500 text-sm">
         © 2025 Cavite State University – Transaction System
     </footer>
+
+    <!-- NAV TOGGLE SCRIPT -->
+    <script>
+        document.getElementById("nav-toggle").onclick = function () {
+            const menu = document.getElementById("nav-menu");
+            menu.classList.toggle("hidden");
+        };
+    </script>
 
 </body>
 </html>
