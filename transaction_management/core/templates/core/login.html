@@ -5,109 +5,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="{% static 'core/Style.css' %}">
-    <script src="https://kit.fontawesome.com/cda339b82d.js" crossorigin="anonymous"></script>
+    <title>CvSU Login</title>
 
     <style>
-        /* 🔒 Hide registrar link by default */
-        .secret-link,
-    .admin_secret_link {
-        display: none;
-    }
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #004d26 0%, #006400 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            height: 100%;
+        }
 
+        html {
+            height: 100%;
+        }
+
+        .login-container {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+            box-sizing: border-box;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h1 {
+            color: #006400;
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #006400;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .login-form input[type="text"]:focus,
+        .login-form input[type="password"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .login-form input[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: #006400;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .login-form input[type="submit"]:hover {
+            background: #004d26;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 100, 0, 0.3);
+        }
+
+        .signup-text {
+            text-align: center;
+            margin-top: 24px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signup-text a {
+            color: #006400;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .secret-link,
+        .admin_secret_link {
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            display: none;
+        }
+
+        .secret-link.visible,
+        .admin_secret_link.visible {
+            display: block;
+        }
+
+        .icon-user,
+        .icon-lock {
+            width: 18px;
+            height: 18px;
+        }
     </style>
 </head>
+
 <body>
-    <div class="login">
-        <form method="post">
-            {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                    <div class="p-2 text-white text-sm rounded
-                        {% if message.tags == 'error' %}
-                            bg-red-500
-                        {% elif message.tags == 'success' %}
-                            bg-green-500
-                        {% endif %}
-                    ">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
-            {% csrf_token %}
-            <h2>Sign In</h2>
+<div class="login-container">
 
-            <div class="inputBox">
-                <i class="fa-solid fa-user"></i>
-                <input id="emailInput" type="text" name="email" placeholder="Email" autocomplete="off" required>
-            </div>
-
-            <div class="inputBox">
-                <i class="fa-solid fa-lock"></i>
-                <input type="password" name="password" placeholder="Password" required>
-            </div>
-
-            <div class="submit">
-                <input type="submit" value="Sign In">
-            </div>
-
-            <div class="registration">
-                <p>Don’t have an account? 
-                    <a href="{% url 'core:register' %}"><b>Sign up</b></a>
-                </p>
-
-                <!-- 🔒 This will be hidden unless secret code is typed -->
-                <p class="secret-link">
-                    Registrar?
-                    <a href="{% url 'core:registrar_register' %}"><b>Register here</b></a>
-                </p>
-
-                <p class="admin_secret_link">
-                    Admin
-                    <a href="/admin/"> Click here!</a>
-                </p>
-            </div>
-
-        </form>
+    <div class="login-header">
+        <h1>Sign In</h1>
     </div>
 
-    <!-- SECRET TRIGGER SCRIPT -->
-    <script>
-        const emailInput = document.getElementById("emailInput");
-        const secretLink = document.querySelector(".secret-link");
-        const admin_secret = document.querySelector(".admin_secret_link");
+    <form class="login-form" method="post">
+        {% csrf_token %}
 
+        <!-- EMAIL -->
+        <div class="input-group">
+            <span class="input-icon">
+                <svg class="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </span>
+            <input id="emailInput" type="text" name="email" placeholder="Email" autocomplete="off" required>
+        </div>
 
+        <!-- PASSWORD -->
+        <div class="input-group">
+            <span class="input-icon">
+                <svg class="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </span>
+            <input id="passwordInput" type="password" name="password" placeholder="Password" required>
+        </div>
 
-        const trigger = "@registrar";  // <-- changeable secret code here
-        const trigger_admin = "@admin" // <--- This is the code to view the admin frame
+        <input type="submit" value="Sign In">
+    </form>
 
+    <!-- Registration -->
+    <p class="signup-text">
+        Don’t have an account?
+        <a href="{% url 'core:register' %}">Sign up</a>
+    </p>
 
-        emailInput.addEventListener("input", () => {
+    <!-- Hidden registrar link -->
+    <p class="secret-link" id="registrarLink">
+        Registrar?
+        <a href="{% url 'core:registrar_register' %}"><b>Register here</b></a>
+    </p>
 
-            // This is for registrar
-            if (emailInput.value.includes(trigger)) {
-                secretLink.style.display = "block";   // show
-            } else {
-                secretLink.style.display = "none";    // hide
-            }
+    <!-- Hidden admin link -->
+    <p class="admin_secret_link" id="adminLink">
+        Admin
+        <a href="/admin/">Click here!</a>
+    </p>
 
+</div>
 
-            // This is for admin
-            if(emailInput.value.includes(trigger_admin)){
-                admin_secret.style.display = "block"; // This condition will show the user
-            } else {
-                admin_secret.style.display = "none"; // This will hide
-            }
-        });
+<script>
+    const emailInput = document.getElementById('emailInput');
+    const registrarLink = document.getElementById('registrarLink');
+    const adminLink = document.getElementById('adminLink');
 
+    emailInput.addEventListener('input', function () {
+        const value = this.value.toLowerCase();
 
-        
-
-    </script>
+        registrarLink.classList.toggle('visible', value.includes('@registrar'));
+        adminLink.classList.toggle('visible', value.includes('@admin'));
+    });
+</script>
 
 </body>
 </html>

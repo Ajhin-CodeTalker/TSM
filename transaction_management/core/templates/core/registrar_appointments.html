@@ -1,29 +1,53 @@
 {% extends "base.html" %}
 
 {% block navbar %}
-<a href="{% url 'core:registrar_dashboard' %}" class="hover:text-blue-600">Home</a>
-<a href="{% url 'core:registrar_appointments' %}" class="text-blue-600 font-semibold">Appointments</a>
-<a href="{% url 'core:registrar_certificates' %}" class="hover:text-blue-600">Certificates</a>
-<a href="{% url 'core:approval_list' %}" class="hover:text-blue-600">Pending Accounts</a>
+<!-- 🔽 Mobile Navbar -->
+<div class="md:hidden bg-white border-b shadow-sm">
+    <div class="flex justify-between items-center px-4 py-3">
+        <span class="text-gray-700 font-semibold text-lg">Menu</span>
 
-{% endblock %}
+        <button id="mobileMenuBtn" class="text-gray-600 text-3xl focus:outline-none">
+            ☰
+        </button>
+    </div>
 
-{% block navbar_mobile %}
-<a href="{% url 'core:registrar_dashboard' %}" class="block py-1">Home</a>
-<a href="{% url 'core:registrar_appointments' %}" class="block py-1 font-semibold text-blue-600">Appointments</a>
-<a href="{% url 'core:registrar_certificates' %}" class="block py-1">Certificates</a>
-<a href="{% url 'core:approval_list' %}" class="block py-1">Pending Accounts</a>
+    <div id="mobileMenu" class="hidden flex-col px-4 pb-4 space-y-3 text-gray-700">
+        <a href="{% url 'core:registrar_dashboard' %}" class="block hover:text-blue-600">Home</a>
+        <a href="{% url 'core:registrar_appointments' %}" class="block text-blue-600 font-semibold">Appointments</a>
+        <a href="{% url 'core:registrar_certificates' %}" class="block hover:text-blue-600">Certificates</a>
+        <a href="{% url 'core:approval_list' %}" class="block hover:text-blue-600">Pending Accounts</a>
+    </div>
+</div>
 
+<!-- 🖥 Desktop Navbar -->
+<nav class="hidden md:flex space-x-8 text-gray-600 font-medium px-6 py-3 border-b bg-white shadow-sm">
+    <a href="{% url 'core:registrar_dashboard' %}" class="hover:text-blue-600">Home</a>
+    <a href="{% url 'core:registrar_appointments' %}" class="text-blue-600 font-semibold">Appointments</a>
+    <a href="{% url 'core:registrar_certificates' %}" class="hover:text-blue-600">Certificates</a>
+    <a href="{% url 'core:approval_list' %}" class="hover:text-blue-600">Pending Accounts</a>
+</nav>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("mobileMenuBtn");
+    const menu = document.getElementById("mobileMenu");
+
+    btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+    });
+});
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="bg-white shadow-md rounded-xl p-6">
+<div class="bg-white shadow-md rounded-xl p-6 max-w-6xl mx-auto">
 
-    <h2 class="text-xl font-semibold text-gray-800 mb-2">Appointment Requests</h2>
+    <h2 class="text-xl font-semibold text-gray-800 mb-1">Appointment Requests</h2>
     <p class="text-gray-500 text-sm mb-4">Manage student appointment requests.</p>
 
-    <!-- Responsive scroll -->
-    <div class="overflow-x-auto">
+    <!-- TABLE WRAPPER -->
+    <div class="overflow-x-auto border border-gray-200 rounded-xl">
+
         <table class="min-w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr>
@@ -55,20 +79,22 @@
                         {% endif %}
                     </td>
 
-                    <td class="px-4 py-3 text-center space-x-3">
-                        <a href="{% url 'core:update_appointment_status' a.id 'Approved' %}" class="text-green-600 hover:text-green-800">Approve</a>
-                        <a href="{% url 'core:update_appointment_status' a.id 'Declined' %}" class="text-red-600 hover:text-red-800">Decline</a>
+                    <td class="px-4 py-3 text-center space-x-2">
+                        <a href="{% url 'core:update_appointment_status' a.id 'Approved' %}"
+                           class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs hover:bg-green-200">Approve</a>
+
+                        <a href="{% url 'core:update_appointment_status' a.id 'Declined' %}"
+                           class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs hover:bg-red-200">Decline</a>
                     </td>
 
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="py-5 text-center text-gray-500">No appointments found.</td>
+                    <td colspan="6" class="text-center py-5 text-gray-500">No appointments found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
 </div>
 {% endblock %}

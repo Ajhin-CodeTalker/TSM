@@ -1,64 +1,114 @@
-
 {% block content %}
-<div class="max-w-xl mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg text-center">
-    {% if profile.is_approved_by_registrar %}
-    <h2 class="text-green-700 font-bold text-xl mb-3">Your account is approved!</h2>
-    <p class="text-gray-600 mb-4">You may now log in to your student dashboard.</p>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 
-    <a href="{% url 'core:login' %}"
-       class="px-5 py-2 bg-green-600 text-white rounded-lg">
-        Proceed to Login
-    </a>
+<div class="min-h-screen bg-gray-100 py-10 px-4 flex justify-center">
+    <div class="max-w-3xl w-full">
 
-    {% else %}
-        <h2 class="text-yellow-700 font-bold text-xl mb-3">Your account is under review</h2>
-        <p class="text-gray-600 mb-4">Registrar is reviewing your details and uploaded documents.</p>
-        <p class="text-sm text-gray-500">Refresh this page to check your approval status.</p>
-    {% endif %}
+        <!-- PAGE HEADER -->
+        <div class="bg-gradient-to-r from-green-800 to-green-700 p-6 rounded-2xl shadow-md mb-8">
+            <h1 class="text-3xl font-bold text-white">Account Under Review</h1>
+            <p class="text-green-100">Please wait while the Registrar verifies your information</p>
+        </div>
 
-    <h2 class="text-2xl font-bold text-gray-900 mb-4">Account Approval Status</h2>
+        <!-- STATUS CARD -->
+        <div class="relative bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
 
-    <p class="text-gray-600 mb-6">
-        Hello <strong>{{ student.first_name }} {{ student.last_name }}</strong>, thank you for registering!
-        Your account is currently being reviewed by the Registrar's Office.
-    </p>
+            <!-- Accent Top Border -->
+            <div class="h-2 bg-gradient-to-r from-green-700 to-green-600"></div>
 
-    <div class="mb-6">
-        {% if profile.is_approved_by_registrar %}
-            <p class="text-green-600 font-semibold text-lg">✅ Your account has been approved!</p>
-            <a href="{% url 'core:login' %}"
-               class="mt-4 inline-block bg-green-600 text-white px-5 py-2 rounded-lg">
-               Proceed to Login
-            </a>
+            <div class="p-8">
+                <!-- STATUS PANEL -->
+                <div class="flex items-center space-x-4 bg-green-50 border border-green-200 rounded-xl p-4 mb-6 shadow-sm">
+                    {% if profile.is_approved_by_registrar %}
+                        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-green-600 text-white text-lg">✓</div>
+                        <div>
+                            <p class="font-semibold text-green-700 text-lg">Your account is approved!</p>
+                            <p class="text-gray-600 text-sm">You may proceed to login.</p>
+                        </div>
 
-        {% else %}
-            <p class="text-yellow-600 font-semibold text-lg">⏳ Waiting for Registrar Approval...</p>
-            <p class="text-gray-500 mt-2">Please check back later.</p>
-        {% endif %}
+                    {% else %}
+                        <div class="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                        <div>
+                            <p class="font-semibold text-green-700 text-lg">Waiting for Registrar Approval…</p>
+                            <p class="text-gray-600 text-sm">Please check back later.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- SECTION HEADER -->
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Account Approval Status</h2>
+
+                <!-- DESCRIPTION -->
+                <p class="text-gray-600 mb-6">
+                    Hello <strong>{{ student.first_name }} {{ student.last_name }}</strong>, thank you for registering!
+                    Your account is currently being reviewed by the Registrar's Office.
+                </p>
+
+                <!-- APPROVAL MESSAGE / LOGIN BUTTON -->
+                <div class="mb-8 text-center">
+                    {% if profile.is_approved_by_registrar %}
+                        <p class="text-green-600 font-semibold text-lg mb-3">
+                            Your account has been approved!
+                        </p>
+
+                        <a href="{% url 'core:login' %}"
+                           class="inline-block bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow">
+                            Proceed to Login
+                        </a>
+
+                    {% else %}
+                        <p class="text-yellow-600 font-semibold text-lg">
+                            Waiting for Registrar Approval…
+                        </p>
+                        <p class="text-gray-500 mt-1">We will notify you once it's done.</p>
+                    {% endif %}
+                </div>
+
+                <!-- SUBMITTED INFORMATION -->
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm">
+
+                    <h3 class="font-bold text-gray-800 mb-4 text-lg">Submitted Information</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <p><strong>Student No:</strong> {{ profile.student_number }}</p>
+                        <p><strong>Course:</strong> {{ profile.course }}</p>
+                        <p><strong>Year Level:</strong> {{ profile.year_level }}</p>
+                        <p><strong>Submitted:</strong> {{ profile.submitted_at|date:"M d, Y" }}</p>
+                    </div>
+
+                    {% if profile.document %}
+                        <div class="mt-4">
+                            <strong>Document:</strong>
+                            <a href="{{ profile.document.url }}" 
+                               target="_blank"
+                               class="text-blue-600 underline ml-1">
+                                View File
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- REFRESH BUTTON -->
+                <div class="text-center mt-8">
+                    <button onclick="location.reload()"
+                            class="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow flex items-center space-x-2 mx-auto">
+                        <span>Refresh Status</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582M20 20v-5h-.581M5.582 9A7.5 7.5 0 0112 4.5c3.59 0 6.643 2.49 7.418 5.874M18.418 15A7.5 7.5 0 0112 19.5c-3.59 0-6.643-2.49-7.418-5.874" />
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
     </div>
-
-    <div class="mt-6 bg-gray-100 p-4 rounded-lg text-left">
-        <h3 class="font-semibold mb-2">Submitted Information</h3>
-
-        <p><strong>Student No:</strong> {{ profile.student_number }}</p>
-        <p><strong>Course:</strong> {{ profile.course }}</p>
-        <p><strong>Year Level:</strong> {{ profile.year_level }}</p>
-        <p><strong>Submitted:</strong> {{ profile.submitted_at|date:"M d, Y" }}</p>
-
-        {% if profile.document %}
-            <p class="mt-2">
-                <strong>Document:</strong>
-                <a href="{{ profile.document.url }}" class="text-blue-600 underline" target="_blank">
-                    View File
-                </a>
-            </p>
-        {% endif %}
-    </div>
-
-    <button onclick="location.reload()"
-            class="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg">
-        Refresh Status
-    </button>
-
 </div>
+
+<style>
+    .animate-spin-slow {
+        animation: spin 3s linear infinite;
+    }
+</style>
 {% endblock %}

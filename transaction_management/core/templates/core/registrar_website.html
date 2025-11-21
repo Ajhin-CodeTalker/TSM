@@ -1,6 +1,4 @@
 {% load static %}
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,36 +21,96 @@
         .status-processing { background: #dbeafe; color: #1e40af; }
         .status-completed { background: #d1fae5; color: #065f46; }
         .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        
+        /* Canva-style Logout Button */
+        .logout-button {
+            position: relative;
+            padding: 10px 24px;
+            background: #E53E3E;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(229,62,62,0.3), 0 1px 3px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-button:hover {
+            background: #C53030;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(229,62,62,0.4), 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .logout-button:active {
+            transform: scale(0.98);
+        }
+        .logout-button:hover svg {
+            transform: translateX(3px);
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-lg border-b-4 border-blue-600">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Transaction Management System</h1>
-                        <p class="text-sm text-gray-600">Registrar Document Management Platform</p>
-                    </div>
+   <!-- Header -->
+<header class="bg-white shadow-lg border-b-4 border-blue-600">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex flex-col md:flex-row items-center md:justify-between space-y-4 md:space-y-0">
+
+            <!-- Left: Logo + Title -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg flex-shrink-0">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-sm font-medium text-gray-700">Maria Santos</p>
-                        <p class="text-xs text-gray-500">Senior Registrar</p>
-                    </div>
-                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        MS
-                    </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Transaction Management System</h1>
+                    <p class="text-sm text-gray-600">Registrar Document Management Platform</p>
                 </div>
             </div>
+
+            <!-- Right: User Info + Avatar + Logout -->
+            <div class="flex items-center space-x-4">
+                <!-- Profile + Logout -->
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="text-right">
+                    <p class="text-sm font-medium text-gray-700">
+                        {{ user.first_name }} {{ user.last_name }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                        {{ profile.role|default:"Registrar"}}
+                    </p>
+                </div>
+
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    {{ initials }}
+                </div>
+                
+                <!-- Logout Form -->
+                <form action="{% url 'core:logout' %}" method="post" class="flex items-center">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">
+                        Logout
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24" stroke-width="2" class="w-4 h-4">
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </form>
+
+            </div>
+
         </div>
-    </header>
+    </div>
+</header>
+
+
 
     <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Navigation Tabs -->
@@ -152,8 +210,9 @@
                             <p class="text-xs text-gray-500">{{ activity.time|date:"Y-m-d H:i" }} ago</p>
                         </div>
                     </div>
-                    {% endfor %}
+                    {% empty %}
                     <p class="text-gray-500 text-sm">No recent activity yet...</p>
+                    {% endfor %}
         </div>
         
         <!-- NAV CARDS -->
@@ -180,7 +239,7 @@
             <div class="bg-white rounded-xl shadow-lg">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800">Document Requests</h3>
+                        <!-- <h3 class="text-lg font-semibold text-gray-800">Document Requests</h3> -->
                         <div class="flex space-x-3">
                             <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
                                 <option>All Documents</option>
@@ -224,7 +283,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ appointment.purpose }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ appointment.appointment_date}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ appointment.appointment_date }}</td>
                                  <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full 
                                         {% if appointment.status == 'Pending' %}status-pending

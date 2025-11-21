@@ -31,6 +31,8 @@ urlpatterns = [
 
     # ✅ Include all routes from the "core" app (register, verify, appointments, etc.)
     path('', include('core.urls', namespace='core')),
+    # path("registrar/", views.registrar_register, name="registrar_register"),
+
 
     # ✅ Default homepage redirect
     # When someone visits http://127.0.0.1:8000/, it will redirect to /register/
