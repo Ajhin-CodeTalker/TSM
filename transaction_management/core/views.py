@@ -59,12 +59,10 @@ def student_dashboard(request):
             profile = None
 
         # Get student's appointments and certificates if logged in
-        try:
-            from .models import CertificateRequest
-            appointments = Appointment.objects.filter(student=user).order_by('-created_at')
-            certificates = CertificateRequest.objects.filter(student=user).order_by('-created_at')
-        except Exception:
-            certificates = []
+
+        appointments = Appointment.objects.filter(student=user).order_by('-created_at')
+        certificates = CertificateRequest.objects.filter(student=user).order_by('-requested_at')
+
     else:
         # For anonymous visitors — no queries using user
         profile = None
@@ -81,13 +79,6 @@ def student_dashboard(request):
 
     return render(request, "core/student_dashboard.html", context)
 
-
-
-
-
-# def generate_otp_code(length=6):
-#     return "".join(str(random.randint(0,9)) for _ in range(length))
-
 def register(request):
     if request.method == "POST":
         form = StudentRegistrationForm(request.POST, request.FILES)
@@ -101,6 +92,10 @@ def register(request):
                 is_active=False  # user cannot login yet
             )
 
+            # Staff status
+            user.is_staff = False
+            user.save()
+
             Profile.objects.create(
                 user=user,
                 student_number=form.cleaned_data["student_number"],
@@ -110,6 +105,7 @@ def register(request):
                 submitted_at=timezone.now(),
                 is_verified_email=True,  # always true since no OTP
                 is_approved_by_registrar=False
+
             )
 
             # direct redirect to pending page
@@ -199,78 +195,10 @@ def login_view(request):
 
     return render(request, "core/login.html")
 
-
-
-
 # LOGOUT FRAME
 def logout_view(request):
     logout(request)
     return redirect("core:login")
-
-
-
-
-
-
-
-# def verify_otp(request):
-#     """
-#     request session 
-    
-#     * allows to get for approval before finalization of the account
-#     * create a verification of legitimacy of being a student of the campus
-#     * registrar will track documents before approving the account
-#     """
-
-#     user_id = request.session.get("verify_user_id")
-#     if not user_id:
-#         return redirect("core:register")
-
-#     user = get_object_or_404(User, id=user_id)
-
-#     if request.method == "POST":
-#         form = OTPForm(request.POST)
-
-#         if form.is_valid():
-#             code = form.cleaned_data["code"].strip()
-
-#             # check last unexpired OTP
-#             otp_qs = OTP.objects.filter(user=user, code=code).order_by("-created_at")
-
-#             if not otp_qs.exists():
-#                 form.add_error("code", "Invalid code")
-
-#             else:
-#                 otp = otp_qs.first()
-
-#                 if otp.is_expired():
-#                     form.add_error("code", "Code expired. Request a new Code!")
-
-#                 else:
-#                     # Mark profile as verified
-#                     profile = user.profile
-#                     profile.is_verified_email = True
-#                     profile.save()
-
-#                     # Activate the account so login will work
-#                     user.is_active = True
-#                     user.save()
-
-#                     # Remove all OTPs for this user
-#                     OTP.objects.filter(user=user).delete()
-
-#                     # Log the user in
-#                     login(request, user)
-
-#                     # Send to pending approval page
-#                       return redirect("core:waiting_for_approval")
-
-#     else:
-#         form = OTPForm()
-
-#     return render(request, "core/verify_otp.html", {"form": form, "email": user.email})
-
-
 
 def pending_approval(request):
     """
@@ -415,14 +343,35 @@ def registrar_appointments(request):
     return render(request, "core/registrar_appointments.html", {"appointments": appointments})
 
 
-# @user_passes_test(is_registrar)
+# Checks the admin user and display in the Dashboard of the student
 def update_appointment_status(request, appointment_id, status):
-    appointment = get_object_or_404(Appointment, id=appointment_id)
-    appointment.status = status
+    appointment = get_object_or_404(Appointment, id = appointment_id)
+    appointment.status = status # displays the user/registrar
+
+    if status == "Approved":
+        appointment.approved_by = request.user
+    else:
+        appointment.approved_by = None
+
     appointment.save()
-    messages.success(request, f"Appointment {status.lower()} successfully")
+
     return redirect("core:registrar_appointments")
 
+
+
+
+# @user_passes_test(is_registrar)
+def update_certificate_status(request, cert_id, status):
+    cert = get_object_or_404(CertificateRequest, id=cert_id)
+    cert.status = status
+
+    # storing who performed the action
+    cert.approved_by = request.user
+
+    cert.save()
+
+    messages.success(request, f"Certificate Request {status.lower()} successfully")
+    return redirect("core:registrar_certificates")
 
 @never_cache
 @login_required(login_url='/login/')
@@ -481,14 +430,6 @@ def registrar_certificates(request):
     certificates = CertificateRequest.objects.all().order_by("-requested_at")
     return render(request, "core/registrar_certificates.html", {"certificates": certificates})
 
-# REGISTRAR: update(approve/reject/release)
-def update_certificate_status(request, cert_id, status):
-    cert = get_object_or_404(CertificateRequest, id=cert_id)
-    cert.status = status
-    cert.save()
-    messages.success(request, f"Certificate request {status.lower()} successfully")
-    return redirect("core:registrar_certificates")
-
 def certificate_request_view(request):
     user = request.user
     from .models import CertificateRequest
@@ -529,12 +470,6 @@ def certificate_request_view(request):
 
 
 
-
-
-
-
-
-
 # This is for REGISTRAR REGISTER
 def registrar_register(request):
     """Registrar REGISTRATION"""
@@ -552,17 +487,3 @@ def registrar_register(request):
         form = RegistrarRegistrationForm()
 
     return render(request, "core/registrar_register.html", {"form": form})
-
-
-
-
-
-
-
-
-
-
-
-
-
-

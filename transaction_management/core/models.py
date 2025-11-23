@@ -63,9 +63,17 @@ class Appointment(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
     created_at = models.DateTimeField(auto_now=True)
 
-
+    approved_by = models.ForeignKey(
+            User,
+            on_delete = models.SET_NULL,
+            null = True,
+            blank = True,
+            related_name="approved_appointments"
+        )
     def __str__(self):
         return f"{self.student.username} - {self.appointment_date} ({self.status})"
+    
+    
     
 class CertificateRequest(models.Model):
     CERTIFICATE_CHOICES = [
@@ -91,6 +99,16 @@ class CertificateRequest(models.Model):
         default='Pending'
     )
     requested_at = models.DateTimeField(default=timezone.now)
+
+
+    # Field for showing who approved/reject 
+    approved_by = models.ForeignKey(
+        User,
+        on_delete = models.SET_NULL,
+        null = True,
+        blank = True,
+        related_name = "approved_certificates"
+    )
 
     def __str__(self):
         return f"{self.student.username} - {self.certificate_type} ({self.status})"

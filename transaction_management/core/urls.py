@@ -35,7 +35,6 @@ urlpatterns = [
     path("registrar/certificates/update/<int:cert_id>/<str:status>/", views.update_certificate_status, name="update_certificate_status"),
 
 
-
     # THESE ARE FOR REGISTRAR
     path("registrar/register/", views.registrar_register, name="registrar_register"),
 

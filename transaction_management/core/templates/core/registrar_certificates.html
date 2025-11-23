@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td class="px-4 py-3 text-center space-x-3">
                         <a href="{% url 'core:update_certificate_status' c.id 'Approved' %}" class="text-green-600 hover:text-green-800">Approve</a>
                         <a href="{% url 'core:update_certificate_status' c.id 'Released' %}" class="text-blue-600 hover:text-blue-800">Release</a>
-                        <a href="{% url 'core:update_certificate_status' c.id 'Rejected' %}" class="text-red-600 hover:text-red-800">Reject</a>
+                        <a href="{% url 'core:update_certificate_status' c.id 'Declined' %}" class="text-red-600 hover:text-red-800">Reject</a>
                     </td>
                 </tr>
 
