@@ -15,6 +15,7 @@ from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from core import views
 from django.contrib.auth import views as auth_views
+from django.shortcuts import redirect
 
 # ----------------------------------------
 # URL Patterns
@@ -28,6 +29,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
 
+    path("", lambda request: redirect("register"), name="home"),
 
     # ✅ Include all routes from the "core" app (register, verify, appointments, etc.)
     path('', include('core.urls', namespace='core')),
