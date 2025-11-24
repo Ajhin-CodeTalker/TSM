@@ -36,7 +36,7 @@ urlpatterns = [
 
     # ✅ Default homepage redirect
     # When someone visits http://127.0.0.1:8000/, it will redirect to /register/
-    path('', RedirectView.as_view(url='/register/')),
+    path('', include('core.urls', namespace='core')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # ----------------------------------------

@@ -116,3 +116,11 @@ class CertificateRequest(models.Model):
 class RegistrarProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=100, default="Registrar")
+
+
+class AdminProfile(models.Model):
+    user = models.OneToOneField(User, on_delete = models.CASCADE)
+    role = models.CharField(max_length = 100, default = "Administrator")
+
+    def __str__(self):
+        return f"{self.user.username} (Admin)"

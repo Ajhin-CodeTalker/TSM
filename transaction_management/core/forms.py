@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from .models import Appointment
 from .models import CertificateRequest
 from django.contrib.auth.forms import AuthenticationForm
+from django import forms
+
 
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
@@ -163,3 +165,30 @@ class RegistrarRegistrationForm(forms.ModelForm):
             raise forms.ValidationError("Password do not match")
         
         return cleaned_data
+    
+
+# Admin
+class AdminRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+    confirm_password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "password"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get("password")
+        p2 = cleaned_data.get("confirm_password")
+
+        if p1 != p2:
+            raise forms.ValidationError("Passwords do not match.")
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])
+        if commit:
+            user.save()
+        return user

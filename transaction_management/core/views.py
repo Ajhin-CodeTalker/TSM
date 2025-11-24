@@ -25,8 +25,8 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.views.decorators.cache import never_cache
-
-
+from .models import AdminProfile
+from .forms import AdminRegistrationForm
 
 
 @never_cache
@@ -372,14 +372,21 @@ def update_certificate_status(request, cert_id, status):
 
     messages.success(request, f"Certificate Request {status.lower()} successfully")
     return redirect("core:registrar_certificates")
-
 @never_cache
 @login_required(login_url='/login/')
-@user_passes_test(is_registrar, login_url='/login/')
 def registrar_dashboard(request):
     today = date.today()
     month_start = today.replace(day=1)
-    
+
+    # Logged-in user profile
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    # Generate initials (e.g., "AA")
+    if user.first_name and user.last_name:
+        initials = f"{user.first_name[0]}{user.last_name[0]}".upper()
+    else:
+        initials = user.username[:2].upper()
 
     pending_profiles = Profile.objects.filter(
         is_verified_email=True, is_approved_by_registrar=False
@@ -411,7 +418,6 @@ def registrar_dashboard(request):
             "time": a.created_at,
         })
 
-    # Sort both by most recent
     recent_activity = sorted(recent_activity, key=lambda x: x["time"], reverse=True)[:5]
 
     context = {
@@ -420,6 +426,10 @@ def registrar_dashboard(request):
         "completed_today": completed_today,
         "total_this_month": total_this_month,
         "recent_activity": recent_activity,
+
+        # 🔥 Added so header displays correctly
+        "profile": profile,
+        "initials": initials,
     }
 
     return render(request, "core/registrar_website.html", context)
@@ -467,6 +477,37 @@ def certificate_request_view(request):
         'form': form,
         'previous_request': previous_request,
     })
+
+
+def admin_register(request):
+    if request.method == "POST":
+        form = AdminRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+
+            user.is_staff = True          # allows admin dashboard access
+            user.is_superuser = True      # allows Django admin access
+            user.save()
+
+            # optional: log them in automatically
+            login(request, user)
+
+            messages.success(request, "Admin account created successfully!")
+            return redirect('core:registrar_dashboard')  # or custom admin dashboard
+
+    else:
+        form = AdminRegistrationForm()
+
+    return render(request, "core/admin_register.html", {"form": form})
+
+
+
+def is_admin(user):
+    return user.is_superuser
+
+def is_registrar(user):
+    return user.is_staff and not user.is_superuser
+
 
 
 

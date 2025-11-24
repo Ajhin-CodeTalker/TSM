@@ -1,0 +1,178 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CvSU Admin Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- SAME EXACT DESIGN FROM CANVA --- */
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container { width: 100%; max-width: 480px; }
+
+    .logo-section { text-align: center; margin-bottom: 24px; }
+
+    .logo-circle {
+      width: 80px; height: 80px;
+      background: #006400;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 100, 0, 0.2);
+    }
+    .logo-text { color: #FFD700; font-size: 32px; font-weight: 700; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 32px;
+    }
+
+    .header { text-align: center; margin-bottom: 32px; }
+    .header h1 { color: #006400; font-size:28px; margin-bottom:8px; }
+    .header p { color: #6b7280; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { font-size:14px; font-weight:500; margin-bottom:6px; display:block; }
+    .form-group input {
+      width: 100%; padding: 12px;
+      border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size:14px;
+    }
+    .form-group input:focus {
+      border-color: #006400;
+      box-shadow: 0 0 0 3px rgba(0,100,0,0.1);
+      outline: none;
+    }
+
+    .submit-btn {
+      width:100%; padding:14px;
+      background:#006400; color:white;
+      border:none; border-radius:6px;
+      font-weight:600; cursor:pointer;
+    }
+    .submit-btn:hover { background:#004d26; }
+
+    .error-text {
+      color:#dc2626;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .footer-link { margin-top: 20px; text-align: center; }
+    .footer-link a {
+      color:#006400;
+      text-decoration:none;
+      font-weight:500;
+    }
+    .footer-link a:hover { text-decoration:underline; }
+
+    .success-message {
+      background:#4CAF50;
+      color:white;
+      padding:12px;
+      border-radius:6px;
+      text-align:center;
+      margin-bottom:12px;
+    }
+  </style>
+ </head>
+
+ <body>
+  <div class="container">
+
+    <div class="logo-section">
+      <div class="logo-circle"><span class="logo-text">A</span></div>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="success-message">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="card">
+      <div class="header">
+        <h1>Admin Registration</h1>
+        <p>Create your administrator account</p>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label>Full Name</label>
+          {{ form.full_name }}
+          {% if form.full_name.errors %}
+          <div class="error-text">{{ form.full_name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          {{ form.email }}
+          {% if form.email.errors %}
+          <div class="error-text">{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+          <div class="error-text">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Employee ID</label>
+          {{ form.employee_id }}
+          {% if form.employee_id.errors %}
+          <div class="error-text">{{ form.employee_id.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          {{ form.password }}
+        </div>
+
+        <div class="form-group">
+          <label>Confirm Password</label>
+          {{ form.confirm_password }}
+        </div>
+
+        <div class="form-group">
+          <label>Admin Access Code</label>
+          {{ form.access_code }}
+        </div>
+
+        <button type="submit" class="submit-btn">Register Admin</button>
+      </form>
+
+      <div class="footer-link">
+        <a href="{% url 'core:login' %}">Back to Login</a>
+      </div>
+
+    </div>
+
+  </div>
+ </body>
+</html>

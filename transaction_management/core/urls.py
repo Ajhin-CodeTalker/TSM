@@ -38,41 +38,13 @@ urlpatterns = [
     # THESE ARE FOR REGISTRAR
     path("registrar/register/", views.registrar_register, name="registrar_register"),
 
+
+    # THESE ARE FOR ADMIN
+    path("admin-register/", views.admin_register, name="admin_register"),
+    
     # THESE ARE THE STUDENT PATH
     path('student/dashboard/', views.student_dashboard, name="student_dashboard"),
 
     path("waiting/<int:user_id>/", views.waiting_status, name="waiting_status"),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ]

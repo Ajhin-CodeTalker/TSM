@@ -79,13 +79,23 @@
                 <!-- Profile + Logout -->
             <div class="hidden md:flex items-center space-x-4">
                 <div class="text-right">
+
+                    <!-- Name or username -->
                     <p class="text-sm font-medium text-gray-700">
-                        {{ user.first_name }} {{ user.last_name }}
+                        {% if user.first_name and user.last_name %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
                     </p>
+
+                    <!-- ROLE OUTPUT FIXED -->
                     <p class="text-xs text-gray-500">
-                        {{ profile.role|default:"Registrar"}}
+                        {{ role }}
                     </p>
+
                 </div>
+
 
                 <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {{ initials }}
@@ -120,15 +130,23 @@
                     <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-button py-4 px-2 border-b-2 border-blue-600 text-blue-600 font-medium">
                         Dashboard
                     </button>
+
+                    <!-- Exclusive to Admin -->
+                     {% if user.is_superuser %}
                     <button onclick="showTab('requests')" id="tab-requests" class="tab-button py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                         Document Requests
                     </button>
+
+                    
                     <button onclick="showTab('students')" id="tab-students" class="tab-button py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                         Student Records
                     </button>
                     <button onclick="showTab('reports')" id="tab-reports" class="tab-button py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
                         Reports
                     </button>
+                    {% endif %}
+
+
                 </nav>
             </div>
         </div>
