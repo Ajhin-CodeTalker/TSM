@@ -171,32 +171,6 @@
 
 
         </div>
-        
-                
-        <!-- displays success/error/info messages -->
-        {% if messages %}
-            {% for message in messages %}
-            <div style="
-                background: #e8f5e9;
-                border: 1px solid #81c784;
-                color: #2e7d32;
-                padding: 10px;
-                margin-bottom: 10px;
-                border-radius: 6px;">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-
-
-        <!-- Display messages -->
-        {% if messages %}
-            {% for message in messages %}
-            <div style="background: #e8f5e9; border: 1px solid #81c784; color: #2e7d32; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
 
         <!-- 
             P.S This code is the tester account
@@ -329,5 +303,9 @@
         setTimeout(() => confirmationMsg.classList.remove('show'), 2000);
     });
 </script>
+
+
+
+
 </body>
 </html>

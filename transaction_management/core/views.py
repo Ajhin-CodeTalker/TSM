@@ -27,7 +27,9 @@ from django.contrib.auth import logout
 from django.views.decorators.cache import never_cache
 from .models import AdminProfile
 from .forms import AdminRegistrationForm
-
+from .utils import get_user_role
+from .models import RegistrarProfile
+from django.contrib.auth import logout
 
 @never_cache
 @login_required
@@ -155,45 +157,53 @@ def waiting_status(request, user_id):
 # THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
     """
-    Handles login for both students and registrar users.
-    Registrar users (is_staff=True) go to registrar dashboard.
-    Students go to student dashboard after approval.
+    Handles login for students, registrar, and superadmin.
     """
     if request.method == "POST":
         email_or_username = request.POST.get("email")
         password = request.POST.get("password")
 
-        # Try to find user by email
+        # Allow login with email or username
         try:
             user_obj = User.objects.get(email=email_or_username)
             username = user_obj.username
         except User.DoesNotExist:
-            username = email_or_username  # fallback if username used instead
+            username = email_or_username
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
 
-            # Registrar login
+            # ✅ SUPERADMIN LOGIN → Django admin panel
+            if user.is_superuser:
+                messages.success(request, f"Welcome, Admin {user.username}!")
+                return redirect("/admin/")
+
+            # ✅ REGISTRAR LOGIN → registrar dashboard
             if user.is_staff:
+                messages.success(request, f"Welcome Registrar {user.username}!")
                 return redirect("core:registrar_dashboard")
 
-            # Student login
+            # ✅ STUDENT LOGIN → check approval
             try:
                 profile = user.profile
+
                 if not profile.is_approved_by_registrar:
                     messages.info(request, "Your account is pending registrar approval.")
                     return redirect("core:waiting_for_approval")
+
             except Exception:
                 pass
 
+            messages.success(request, f"Welcome, {user.first_name or user.username}!")
             return redirect("core:student_dashboard")
 
         else:
             messages.error(request, "Invalid email/username or password.")
 
     return render(request, "core/login.html")
+
 
 # LOGOUT FRAME
 def logout_view(request):
@@ -381,7 +391,7 @@ def registrar_dashboard(request):
     # Logged-in user profile
     user = request.user
     profile = getattr(user, 'profile', None)
-
+    role = get_user_role(user) # This gets all the role from the DataBase
     # Generate initials (e.g., "AA")
     if user.first_name and user.last_name:
         initials = f"{user.first_name[0]}{user.last_name[0]}".upper()
@@ -427,9 +437,10 @@ def registrar_dashboard(request):
         "total_this_month": total_this_month,
         "recent_activity": recent_activity,
 
-        # 🔥 Added so header displays correctly
+        # Added so header displays correctly
         "profile": profile,
         "initials": initials,
+        "role": role,
     }
 
     return render(request, "core/registrar_website.html", context)
@@ -477,29 +488,30 @@ def certificate_request_view(request):
         'form': form,
         'previous_request': previous_request,
     })
-
-
 def admin_register(request):
     if request.method == "POST":
         form = AdminRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-
-            user.is_staff = True          # allows admin dashboard access
-            user.is_superuser = True      # allows Django admin access
+            
+            # Hash the password
+            user.set_password(form.cleaned_data["password"])
+            
+            # Make the user an admin
+            user.is_staff = True
+            user.is_superuser = True
+            
             user.save()
 
-            # optional: log them in automatically
-            login(request, user)
+            # create admin profile if you are using AdminProfile
+            AdminProfile.objects.create(user=user)
 
-            messages.success(request, "Admin account created successfully!")
-            return redirect('core:registrar_dashboard')  # or custom admin dashboard
-
+            messages.success(request, "Admin account created successfully! Please login.")
+            return redirect("core:login")
     else:
         form = AdminRegistrationForm()
 
     return render(request, "core/admin_register.html", {"form": form})
-
 
 
 def is_admin(user):
@@ -514,6 +526,10 @@ def is_registrar(user):
 # This is for REGISTRAR REGISTER
 def registrar_register(request):
     """Registrar REGISTRATION"""
+    # Force logout to any current session
+    if request.user.is_authenticated:
+        logout(request)
+
     if request.method == "POST":
         form = RegistrarRegistrationForm(request.POST)
         if form.is_valid():
@@ -521,6 +537,13 @@ def registrar_register(request):
             user.set_password(form.cleaned_data["password"])
             user.is_staff = True # This is the landmark/mark as registrar/staff
             user.save()
+
+
+            # create registrar profile 
+            from .models import RegistrarProfile
+            RegistrarProfile.objects.create(user=user, role="Registrar")
+
+
             messages.success(request, "Registra account created successfuly. Please proceed to login")
             return redirect("core:login") # Redireting towards the login frame
         
@@ -528,3 +551,11 @@ def registrar_register(request):
         form = RegistrarRegistrationForm()
 
     return render(request, "core/registrar_register.html", {"form": form})
+
+
+def dashboard(request):
+    role = get_user_role(request.user)
+
+    return render(request, "core/dashboard.html", {
+        "user_role": role,
+    })

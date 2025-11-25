@@ -171,14 +171,28 @@
 
         <!-- PASSWORD -->
         <div class="input-group">
-            <span class="input-icon">
-                <svg class="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-            </span>
-            <input id="passwordInput" type="password" name="password" placeholder="Password" required>
-        </div>
+                <span class="input-icon">
+                    <svg class="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </span>
+
+                <input id="passwordInput" type="password" name="password" placeholder="Password" required>
+
+                <!-- 👁 Eye Icon -->
+                <span id="togglePassword" style="
+                    position:absolute;
+                    right:16px;
+                    top:50%;
+                    transform:translateY(-50%);
+                    cursor:pointer;
+                    color:#006400;
+                    font-size:18px;
+                ">
+                    👁
+                </span>
+            </div>
 
         <input type="submit" value="Sign In">
     </form>
@@ -219,6 +233,19 @@
         adminLink.classList.toggle('visible', value.includes('@admin'));
     });
 </script>
+
+
+<script>
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("passwordInput");
+
+    togglePassword.addEventListener("click", () => {
+        const type = passwordInput.type === "password" ? "text" : "password";
+        passwordInput.type = type;
+        togglePassword.textContent = type === "password" ? "👁" : "🙈";
+    });
+</script>
+
 
 </body>
 </html>

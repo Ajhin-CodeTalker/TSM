@@ -6,7 +6,7 @@ from .models import Appointment
 from .models import CertificateRequest
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
-
+from .models import AdminProfile
 
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
@@ -144,15 +144,19 @@ class LoginForm(AuthenticationForm):
     )
 
 
+
+# Registrar
+
+REGISTRAR_ACCESS_CODE = "REGISTRAR_CVSU_1906" # This is the code for registrar
 class RegistrarRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
-
+    access_code = forms.CharField(max_length=20, help_text="Enter Registrar Access Code")
 
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "confirm_password", "first_name", "last_name"]
+        fields = ["username", "email", "password", "confirm_password", "first_name", "last_name", "access_code"]
 
 
     def clean(self):
@@ -164,11 +168,41 @@ class RegistrarRegistrationForm(forms.ModelForm):
         if password and confirm_password and password != confirm_password:
             raise forms.ValidationError("Password do not match")
         
+        # Check the registrar access code
+        code = cleaned_data.get("access_code")
+        if code != REGISTRAR_ACCESS_CODE:
+            raise forms.ValidationError("Invalid Registrar Access Code")
+
         return cleaned_data
     
 
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+
+        # Set password
+        user.set_password(self.cleaned_data["password"])
+
+        # make registrar staff member ONLY
+        user.is_staff = True
+        user.is_superuser= False
+
+        if commit:
+            user.save()
+
+
+        return user
 # Admin
+
+# This is the admin access code
+ADMIN_ACCESS_CODE = "CVSU-ADMIN-2025" # This code is changeable accordingly
+
 class AdminRegistrationForm(forms.ModelForm):
+    full_name = forms.CharField(max_length=100)
+    employee_id = forms.CharField(max_length=50)
+    access_code = forms.CharField(max_length=50)
+
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(widget=forms.PasswordInput())
 
@@ -176,19 +210,44 @@ class AdminRegistrationForm(forms.ModelForm):
         model = User
         fields = ["username", "email", "password"]
 
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+        }
+
     def clean(self):
         cleaned_data = super().clean()
+
         p1 = cleaned_data.get("password")
         p2 = cleaned_data.get("confirm_password")
 
         if p1 != p2:
             raise forms.ValidationError("Passwords do not match.")
 
+        # Validate admin access code
+        code = cleaned_data.get("access_code")
+        if code != ADMIN_ACCESS_CODE:
+            raise forms.ValidationError("Invalid admin access code.")
+
         return cleaned_data
 
     def save(self, commit=True):
-        user = super().save(commit=False)
+        # Create superuser
+        user = User(
+            username=self.cleaned_data["username"],
+            email=self.cleaned_data["email"],
+            first_name=self.cleaned_data["full_name"],
+            is_staff=True,       # allows access to admin dashboard
+            is_superuser=True,   # full Django admin access
+        )
         user.set_password(self.cleaned_data["password"])
         if commit:
             user.save()
+
+            # Create admin profile
+            AdminProfile.objects.create(
+                user=user,
+                employee_id=self.cleaned_data["employee_id"]
+            )
+
         return user

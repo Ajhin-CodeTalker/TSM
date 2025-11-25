@@ -1,16 +1,15 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CvSU Admin Registration</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* --- SAME EXACT DESIGN FROM CANVA --- */
+    /* (kept your original styles) */
     body {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
@@ -21,92 +20,67 @@
       justify-content: center;
       padding: 24px;
     }
-
     .container { width: 100%; max-width: 480px; }
-
     .logo-section { text-align: center; margin-bottom: 24px; }
-
-    .logo-circle {
-      width: 80px; height: 80px;
-      background: #006400;
-      border-radius: 50%;
-      margin: 0 auto 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 100, 0, 0.2);
-    }
-    .logo-text { color: #FFD700; font-size: 32px; font-weight: 700; }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 32px;
-    }
-
+    .logo-circle { width: 80px; height: 80px; background: #006400; border-radius: 50%;
+      margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,100,0,0.2); }
+    .logo-text { font-size: 32px; color: #FFD700; font-weight: 700; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 32px; }
     .header { text-align: center; margin-bottom: 32px; }
-    .header h1 { color: #006400; font-size:28px; margin-bottom:8px; }
+    .header h1 { font-size: 28px; color: #006400; }
     .header p { color: #6b7280; }
-
-    .form-group { margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; position: relative; }
     .form-group label { font-size:14px; font-weight:500; margin-bottom:6px; display:block; }
-    .form-group input {
-      width: 100%; padding: 12px;
-      border: 1px solid #e5e7eb; border-radius: 6px;
-      font-size:14px;
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px; transition: 0.2s;
     }
     .form-group input:focus {
-      border-color: #006400;
-      box-shadow: 0 0 0 3px rgba(0,100,0,0.1);
-      outline: none;
+      border-color: #006400; box-shadow: 0 0 0 3px rgba(0,100,0,0.1); outline: none;
     }
-
-    .submit-btn {
-      width:100%; padding:14px;
-      background:#006400; color:white;
-      border:none; border-radius:6px;
-      font-weight:600; cursor:pointer;
-    }
+    .submit-btn { width:100%; padding:14px; background:#006400; color:white; border:none; border-radius:6px;
+      font-weight:600; cursor:pointer; transition: 0.2s; }
     .submit-btn:hover { background:#004d26; }
-
-    .error-text {
-      color:#dc2626;
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .footer-link { margin-top: 20px; text-align: center; }
-    .footer-link a {
-      color:#006400;
-      text-decoration:none;
-      font-weight:500;
-    }
+    .footer-link { text-align:center; margin-top:20px; }
+    .footer-link a { color:#006400; text-decoration:none; font-weight:500; }
     .footer-link a:hover { text-decoration:underline; }
 
-    .success-message {
-      background:#4CAF50;
-      color:white;
-      padding:12px;
-      border-radius:6px;
-      text-align:center;
-      margin-bottom:12px;
+    /* Eye icon */
+    .toggle-pass {
+      position: absolute;
+      right: 12px;
+      top: 38px;
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
     }
+
+    /* Field error text */
+    .field-error { color: #dc2626; font-size: 13px; margin-top: 6px; }
+
+    /* Popup styles (unchanged) */
+    .popup-modal { position: fixed; inset: 0; display: none; justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.45); z-index: 9999; animation: fadeIn 0.3s ease; }
+    .popup-modal.show { display: flex; }
+    .popup-content { width: 90%; max-width: 380px; background: white; border-radius: 14px; padding: 22px;
+      text-align: center; animation: popupScale 0.3s ease; border-left: 6px solid #999; }
+    .popup-content.error { border-left-color: #dc2626; }
+    .popup-content.success { border-left-color: #16a34a; }
+    .popup-message { font-size: 16px; margin-bottom: 14px; }
+    .popup-btn { padding: 10px 20px; background: #006400; border: none; color: white; border-radius: 6px;
+      cursor: pointer; font-weight: 600; }
+    @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popupScale { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
- </head>
+</head>
 
- <body>
+<body>
   <div class="container">
-
     <div class="logo-section">
       <div class="logo-circle"><span class="logo-text">A</span></div>
     </div>
-
-    {% if messages %}
-      {% for message in messages %}
-        <div class="success-message">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
 
     <div class="card">
       <div class="header">
@@ -114,14 +88,23 @@
         <p>Create your administrator account</p>
       </div>
 
-      <form method="POST">
+      <!-- show non-field errors / field errors summary -->
+      {% if form.non_field_errors %}
+        <div class="field-error">
+          {% for err in form.non_field_errors %}
+            {{ err }}<br>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form id="adminForm" method="POST">
         {% csrf_token %}
 
         <div class="form-group">
           <label>Full Name</label>
           {{ form.full_name }}
           {% if form.full_name.errors %}
-          <div class="error-text">{{ form.full_name.errors.0 }}</div>
+            <div class="field-error">{{ form.full_name.errors.0 }}</div>
           {% endif %}
         </div>
 
@@ -129,7 +112,7 @@
           <label>Email</label>
           {{ form.email }}
           {% if form.email.errors %}
-          <div class="error-text">{{ form.email.errors.0 }}</div>
+            <div class="field-error">{{ form.email.errors.0 }}</div>
           {% endif %}
         </div>
 
@@ -137,7 +120,7 @@
           <label>Username</label>
           {{ form.username }}
           {% if form.username.errors %}
-          <div class="error-text">{{ form.username.errors.0 }}</div>
+            <div class="field-error">{{ form.username.errors.0 }}</div>
           {% endif %}
         </div>
 
@@ -145,23 +128,34 @@
           <label>Employee ID</label>
           {{ form.employee_id }}
           {% if form.employee_id.errors %}
-          <div class="error-text">{{ form.employee_id.errors.0 }}</div>
+            <div class="field-error">{{ form.employee_id.errors.0 }}</div>
           {% endif %}
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="position: relative;">
           <label>Password</label>
           {{ form.password }}
+          <span class="toggle-pass" onclick="togglePass('id_password')">👁️</span>
+          {% if form.password.errors %}
+            <div class="field-error">{{ form.password.errors.0 }}</div>
+          {% endif %}
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="position: relative;">
           <label>Confirm Password</label>
           {{ form.confirm_password }}
+          <span class="toggle-pass" onclick="togglePass('id_confirm_password')">👁️</span>
+          {% if form.confirm_password.errors %}
+            <div class="field-error">{{ form.confirm_password.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="form-group">
           <label>Admin Access Code</label>
           {{ form.access_code }}
+          {% if form.access_code.errors %}
+            <div class="field-error">{{ form.access_code.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <button type="submit" class="submit-btn">Register Admin</button>
@@ -170,9 +164,68 @@
       <div class="footer-link">
         <a href="{% url 'core:login' %}">Back to Login</a>
       </div>
-
     </div>
-
   </div>
- </body>
+
+  <!-- POPUP STRUCTURE -->
+  <div id="popupModal" class="popup-modal">
+    <div id="popupContent" class="popup-content">
+      <p id="popupMessage" class="popup-message"></p>
+      <button onclick="closePopup()" class="popup-btn">OK</button>
+    </div>
+  </div>
+
+<script>
+function showPopup(message, type="error") {
+  const modal = document.getElementById("popupModal");
+  const content = document.getElementById("popupContent");
+  const text = document.getElementById("popupMessage");
+
+  text.innerText = message;
+  content.classList.remove("error", "success");
+  content.classList.add(type);
+
+  if (type === "error") {
+    content.style.animation = "shake 0.3s";
+    setTimeout(() => (content.style.animation = ""), 300);
+  }
+
+  modal.classList.add("show");
+}
+
+function closePopup() {
+  document.getElementById("popupModal").classList.remove("show");
+}
+
+document.getElementById("adminForm").addEventListener("submit", function(e) {
+  // Optional: client-side password match check for quicker UX
+  const password = document.getElementById("id_password").value;
+  const confirm = document.getElementById("id_confirm_password").value;
+
+  if (password !== confirm) {
+      e.preventDefault();
+      showPopup("Passwords do not match!", "error");
+      return;
+  }
+
+  // NOTE: Access-code verification is handled on the server-side only (do not rely on frontend for security)
+});
+
+// toggle password visibility
+function togglePass(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  input.type = (input.type === "password") ? "text" : "password";
+}
+</script>
+
+<!-- Show server-side errors in popup (makes UX clearer) -->
+{% if form.errors %}
+<script>
+  // show a clean text summary of errors; escape for JS
+  showPopup("{{ form.errors.as_text|escapejs }}", "error");
+</script>
+{% endif %}
+
+</body>
 </html>

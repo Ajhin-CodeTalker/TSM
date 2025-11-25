@@ -29,7 +29,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
 
-    path("", lambda request: redirect("register"), name="home"),
+    # Note this will direct towards the register as home
+    path("", lambda request: redirect("login"), name="home"),
 
     # ✅ Include all routes from the "core" app (register, verify, appointments, etc.)
     path('', include('core.urls', namespace='core')),
