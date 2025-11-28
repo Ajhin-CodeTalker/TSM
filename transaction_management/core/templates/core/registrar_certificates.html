@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block navbar %}
-<!-- 🔽 Mobile Navbar Wrapper -->
+<!-- Mobile Navbar Wrapper -->
 <div class="md:hidden bg-white border-b shadow-sm">
     <div class="flex justify-between items-center px-4 py-3">
         <span class="text-gray-700 font-semibold text-lg">Menu</span>
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <div class="bg-white shadow-md rounded-xl p-6">
 
     <h2 class="text-xl font-semibold text-gray-800 mb-2">Certificate Requests</h2>
-    <p class="text-gray-500 text-sm mb-4">View and manage all certificate requests.</p>
+    <p class="text-gray-500 text-sm mb-4">View and Manage All Certificate Request</p>
 
     <!-- RESPONSIVE TABLE WRAPPER -->
     <div class="overflow-x-auto rounded-lg border border-gray-200">
@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Student</th>
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Certificate Type</th>
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Purpose</th>
+                    <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">File</th>
                     <th class="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-600">Status</th>
                     <th class="px-4 py-2 text-center text-xs font-semibold uppercase text-gray-600">Actions</th>
                 </tr>
@@ -67,6 +68,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td class="px-4 py-3">{{ c.student.username }}</td>
                     <td class="px-4 py-3">{{ c.certificate_type }}</td>
                     <td class="px-4 py-3">{{ c.purpose }}</td>
+
+                    <td class="px-4 py-3">
+                        {% if c.supporting_document %}
+                            <a href="{{ c.supporting_document.url }}"
+                            class="text-blue-600 underline hover:text-blue-800"
+                            target="_blank">
+                            View File
+                        </a>
+                        {% else %}
+                            <span class="text-gray-500">No File</span>
+
+                        {% endif %}
+
+                    </td>
                     <td class="px-4 py-3">{{ c.status }}</td>
                     <td class="px-4 py-3 text-center space-x-3">
                         <a href="{% url 'core:update_certificate_status' c.id 'Approved' %}" class="text-green-600 hover:text-green-800">Approve</a>

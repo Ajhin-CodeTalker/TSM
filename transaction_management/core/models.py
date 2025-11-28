@@ -120,6 +120,7 @@ class RegistrarProfile(models.Model):
 
 class AdminProfile(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
+    employee_id = models.CharField(max_length = 50)
     role = models.CharField(max_length = 100, default = "Administrator")
 
     def __str__(self):

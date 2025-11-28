@@ -193,8 +193,9 @@ class RegistrarRegistrationForm(forms.ModelForm):
 
 
         return user
-# Admin
+    
 
+# Admin
 # This is the admin access code
 ADMIN_ACCESS_CODE = "CVSU-ADMIN-2025" # This code is changeable accordingly
 
@@ -232,6 +233,8 @@ class AdminRegistrationForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
+        
+        """
         # Create superuser
         user = User(
             username=self.cleaned_data["username"],
@@ -241,6 +244,15 @@ class AdminRegistrationForm(forms.ModelForm):
             is_superuser=True,   # full Django admin access
         )
         user.set_password(self.cleaned_data["password"])
+
+        """
+        user = super().save(commit = False)
+
+        user.first_name = self.cleaned_data["full_name"]
+        user.set_password(self.cleaned_data["password"])
+        user.is_staff = True
+        user.is_superuser = False
+
         if commit:
             user.save()
 

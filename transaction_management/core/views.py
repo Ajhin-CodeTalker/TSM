@@ -157,13 +157,17 @@ def waiting_status(request, user_id):
 # THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
     """
-    Handles login for students, registrar, and superadmin.
+    Types of roles that can login for:
+    - Students
+    - Registrars
+    - Admins (superuser)
     """
+
     if request.method == "POST":
         email_or_username = request.POST.get("email")
         password = request.POST.get("password")
 
-        # Allow login with email or username
+        # login is possible for username or gmail/email
         try:
             user_obj = User.objects.get(email=email_or_username)
             username = user_obj.username
@@ -173,36 +177,43 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            # This prevents Django from overriding the redirect of the django administration to the dashboard
+            # for superusers and sending them to /admin.
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+
             login(request, user)
 
-            # ✅ SUPERADMIN LOGIN → Django admin panel
+          
+     
+            # will stll provide a button for /admin access.
             if user.is_superuser:
-                messages.success(request, f"Welcome, Admin {user.username}!")
-                return redirect("/admin/")
+                messages.success(request, f"Welcome Admin {user.username}!")
+                return redirect("core:registrar_dashboard")
 
-            # ✅ REGISTRAR LOGIN → registrar dashboard
+            # Registrar / Staff → same dashboard
             if user.is_staff:
                 messages.success(request, f"Welcome Registrar {user.username}!")
                 return redirect("core:registrar_dashboard")
 
-            # ✅ STUDENT LOGIN → check approval
+            # Student login
             try:
                 profile = user.profile
 
+                # Student valid but still pending approval
                 if not profile.is_approved_by_registrar:
-                    messages.info(request, "Your account is pending registrar approval.")
                     return redirect("core:waiting_for_approval")
 
-            except Exception:
+            except Profile.DoesNotExist:
+                # If no profile exists it will be sent to student dashboard
                 pass
 
-            messages.success(request, f"Welcome, {user.first_name or user.username}!")
             return redirect("core:student_dashboard")
 
         else:
             messages.error(request, "Invalid email/username or password.")
 
     return render(request, "core/login.html")
+
 
 
 # LOGOUT FRAME
@@ -488,12 +499,18 @@ def certificate_request_view(request):
         'form': form,
         'previous_request': previous_request,
     })
+
+
 def admin_register(request):
     if request.method == "POST":
         form = AdminRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
+            user = form.save()
             
+
+
+            """
+            user = form.save(commit=False)
             # Hash the password
             user.set_password(form.cleaned_data["password"])
             
@@ -505,7 +522,7 @@ def admin_register(request):
 
             # create admin profile if you are using AdminProfile
             AdminProfile.objects.create(user=user)
-
+            """
             messages.success(request, "Admin account created successfully! Please login.")
             return redirect("core:login")
     else:

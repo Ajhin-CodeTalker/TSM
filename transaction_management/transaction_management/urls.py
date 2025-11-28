@@ -33,7 +33,7 @@ urlpatterns = [
     path("", lambda request: redirect("login"), name="home"),
 
     # ✅ Include all routes from the "core" app (register, verify, appointments, etc.)
-    path('', include('core.urls', namespace='core')),
+    # path('', include('core.urls', namespace='core')),
     # path("registrar/", views.registrar_register, name="registrar_register"),
 
 
