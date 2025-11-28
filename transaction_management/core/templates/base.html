@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <!-- Profile + Logout -->
+            <!-- Profile + Logout (Desktop only) -->
             <div class="hidden md:flex items-center space-x-4">
                 <div class="text-right">
                     <p class="text-sm font-medium text-gray-700">
@@ -103,12 +103,15 @@
         </div>
     </header>
 
-    <!-- NAVBAR -->
+    <!-- NAVBAR (Mobile + Desktop combined) -->
     <nav class="bg-white border-b shadow-sm">
-        <div id="nav-menu" class="max-w-7xl mx-auto flex-col md:flex md:flex-row hidden md:flex space-x-8 px-6 py-3 text-gray-600 font-medium">
-            {% block navbar %}
-            <a href="#" class="hover:text-blue-600">Dashboard</a>
-            {% endblock %}
+        <div id="nav-menu"
+             class="max-w-7xl mx-auto flex flex-col space-y-2 px-6 py-3 text-gray-600 font-medium
+                    md:flex-row md:space-x-8 md:space-y-0">
+            <a href="{% url 'core:registrar_dashboard' %}" class="hover:text-blue-600 {% if request.path == '/registrar/dashboard/' %}text-blue-600 font-semibold{% endif %}">Home</a>
+            <a href="{% url 'core:registrar_appointments' %}" class="hover:text-blue-600 {% if request.path == '/registrar/appointments/' %}text-blue-600 font-semibold{% endif %}">Appointments</a>
+            <a href="{% url 'core:registrar_certificates' %}" class="hover:text-blue-600 {% if request.path == '/registrar/certificates/' %}text-blue-600 font-semibold{% endif %}">Certificates</a>
+            <a href="{% url 'core:approval_list' %}" class="hover:text-blue-600 {% if request.path == '/registrar/approval_list/' %}text-blue-600 font-semibold{% endif %}">Pending Accounts</a>
         </div>
     </nav>
 

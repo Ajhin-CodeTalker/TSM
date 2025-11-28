@@ -77,44 +77,41 @@
             <!-- Right: User Info + Avatar + Logout -->
             <div class="flex items-center space-x-4">
                 <!-- Profile + Logout -->
-            <div class="hidden md:flex items-center space-x-4">
-                <div class="text-right">
+                <div class="flex items-center space-x-4">
 
-                    <!-- Name or username -->
-                    <p class="text-sm font-medium text-gray-700">
-                        {% if user.first_name and user.last_name %}
-                            {{ user.first_name }} {{ user.last_name }}
-                        {% else %}
-                            {{ user.username }}
-                        {% endif %}
-                    </p>
+                    <!-- User info (Name + Role) -->
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-medium text-gray-700">
+                            {% if user.first_name and user.last_name %}
+                                {{ user.first_name }} {{ user.last_name }}
+                            {% else %}
+                                {{ user.username }}
+                            {% endif %}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            {{ role }}
+                        </p>
+                    </div>
 
-                    <!-- ROLE OUTPUT FIXED -->
-                    <p class="text-xs text-gray-500">
-                        {{ role }}
-                    </p>
+                    <!-- Avatar (always visible) -->
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {{ initials }}
+                    </div>
+
+                    <!-- Logout Button (always visible, responsive) -->
+                    <form action="{% url 'core:logout' %}" method="post" class="flex items-center">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-button">
+                            Logout
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24" stroke-width="2" class="w-4 h-4">
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </form>
 
                 </div>
-
-
-                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                    {{ initials }}
-                </div>
-                
-                <!-- Logout Form -->
-                <form action="{% url 'core:logout' %}" method="post" class="flex items-center">
-                    {% csrf_token %}
-                    <button type="submit" class="logout-button">
-                        Logout
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24" stroke-width="2" class="w-4 h-4">
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                    </button>
-                </form>
-
-            </div>
 
         </div>
     </div>

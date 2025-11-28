@@ -144,12 +144,60 @@
             width: 18px;
             height: 18px;
         }
+
+        /* Toast container */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Individual toast */
+        .toast {
+            background-color: #f44336; /* red for error */
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 14px;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+        }
+
+        /* Slide in animation */
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Fade out animation */
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
     </style>
 </head>
 
 <body>
 
 <div class="login-container">
+    <div class="toast-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast">{{ message|escapejs }}</div>
+        {% endfor %}
+    {% endif %}
+    </div>
 
     <div class="login-header">
         <h1>Sign In</h1>
