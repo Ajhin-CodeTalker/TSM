@@ -191,13 +191,16 @@
 <body>
 
 <div class="login-container">
-    <div class="toast-container">
+    
+    <!-- This will pop up a alert message -->
     {% if messages %}
-        {% for message in messages %}
-            <div class="toast">{{ message|escapejs }}</div>
-        {% endfor %}
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+            <div class="toast">{{ message }}</div>
+        {% endif %}
+    {% endfor %}
     {% endif %}
-    </div>
+
 
     <div class="login-header">
         <h1>Sign In</h1>

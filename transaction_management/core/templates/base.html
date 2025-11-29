@@ -46,11 +46,11 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- HEADER -->
+    <!-- Header -->
     <header class="bg-white shadow-md border-b-2 border-blue-600">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
 
-            <!-- Logo + Title -->
+            <!-- Logo and Title -->
             <div class="flex items-center space-x-3">
                 <div class="bg-blue-600 p-2 rounded-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,14 +64,14 @@
                 </div>
             </div>
 
-            <!-- Profile + Logout (Desktop only) -->
+            <!-- Profile and Logout (This is for Desktop ONLY!) -->
             <div class="hidden md:flex items-center space-x-4">
                 <div class="text-right">
                     <p class="text-sm font-medium text-gray-700">
                         {{ user.first_name }} {{ user.last_name }}
                     </p>
                     <p class="text-xs text-gray-500">
-                        {{ profile.role|default:"Registrar"}}
+                        {{ role }}
                     </p>
                 </div>
 
@@ -103,7 +103,7 @@
         </div>
     </header>
 
-    <!-- NAVBAR (Mobile + Desktop combined) -->
+    <!-- This is the navbar for mobile -->
     <nav class="bg-white border-b shadow-sm">
         <div id="nav-menu"
              class="max-w-7xl mx-auto flex flex-col space-y-2 px-6 py-3 text-gray-600 font-medium
@@ -115,17 +115,17 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto p-6">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- FOOTER -->
+    <!-- Footer -->
     <footer class="text-center py-4 text-gray-500 text-sm">
         © 2025 Cavite State University – Transaction System
     </footer>
 
-    <!-- NAV TOGGLE SCRIPT -->
+    <!-- Nav Toggle Button Script -->
     <script>
         document.getElementById("nav-toggle").onclick = function () {
             const menu = document.getElementById("nav-menu");

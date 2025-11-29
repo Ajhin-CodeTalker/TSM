@@ -31,6 +31,8 @@ from .utils import get_user_role
 from .models import RegistrarProfile
 from django.contrib.auth import logout
 
+from .utils import header_context
+
 @never_cache
 @login_required
 def student_dashboard(request):
@@ -182,15 +184,13 @@ def login_view(request):
             user.backend = 'django.contrib.auth.backends.ModelBackend'
 
             login(request, user)
-
-          
-     
+            
             # will stll provide a button for /admin access.
             if user.is_superuser:
                 messages.success(request, f"Welcome Admin {user.username}!")
                 return redirect("core:registrar_dashboard")
 
-            # Registrar / Staff → same dashboard
+            # Registrar / Staff they have the same dashboard
             if user.is_staff:
                 messages.success(request, f"Welcome Registrar {user.username}!")
                 return redirect("core:registrar_dashboard")
@@ -247,7 +247,11 @@ def staff_check(user):
 def approval_list(request):
     # display all profiles that have been submitted and are not yet approved yet
     profiles = Profile.objects.filter(is_approved_by_registrar=False).order_by('-submitted_at')
-    return render(request, "core/approval_list.html", {"profiles": profiles})
+
+    context_text = header_context(request)
+    context_text["profiles"] = profiles
+
+    return render(request, "core/approval_list.html", context_text)
 
 @user_passes_test(staff_check)
 def approve_profile(request, profile_id):
@@ -361,7 +365,10 @@ def student_appointments(request):
 # @user_passes_test(is_registrar)
 def registrar_appointments(request):
     appointments = Appointment.objects.all().order_by("-created_at")
-    return render(request, "core/registrar_appointments.html", {"appointments": appointments})
+
+    context_head = header_context(request)
+    context_head["appointments"] = appointments
+    return render(request, "core/registrar_appointments.html", context_head)
 
 
 # Checks the admin user and display in the Dashboard of the student
@@ -370,6 +377,8 @@ def update_appointment_status(request, appointment_id, status):
     appointment.status = status # displays the user/registrar
 
     if status == "Approved":
+        appointment.approved_by = request.user
+    elif status == "Declined":
         appointment.approved_by = request.user
     else:
         appointment.approved_by = None
@@ -404,6 +413,8 @@ def registrar_dashboard(request):
     profile = getattr(user, 'profile', None)
     role = get_user_role(user) # This gets all the role from the DataBase
     # Generate initials (e.g., "AA")
+
+
     if user.first_name and user.last_name:
         initials = f"{user.first_name[0]}{user.last_name[0]}".upper()
     else:
@@ -460,7 +471,11 @@ def registrar_dashboard(request):
 # REGISTRAR: Allows to view ll certificate request
 def registrar_certificates(request):
     certificates = CertificateRequest.objects.all().order_by("-requested_at")
-    return render(request, "core/registrar_certificates.html", {"certificates": certificates})
+
+    context_head = header_context(request)
+    context_head["certificates"] = certificates
+
+    return render(request, "core/registrar_certificates.html", context_head)
 
 def certificate_request_view(request):
     user = request.user
