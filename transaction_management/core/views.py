@@ -16,7 +16,7 @@ from .forms import AppointmentForms
 from django.contrib import messages
 from .models import Appointment, Profile
 from django.utils import timezone
-from datetime import date
+from datetime import date, datetime
 from .forms import CertificateRequestForm
 from .models import CertificateRequest
 from django.contrib.auth.decorators import login_required
@@ -30,7 +30,7 @@ from .forms import AdminRegistrationForm
 from .utils import get_user_role
 from .models import RegistrarProfile
 from django.contrib.auth import logout
-
+from django.core.paginator import Paginator
 from .utils import header_context
 
 @never_cache
@@ -301,55 +301,65 @@ def reject_profile(request, profile_id):
 def is_registrar(user):
     return user.is_staff # can be adjust to have a custom role system
 
+
 @login_required
 def student_appointments(request):
-
     user = request.user
     today = date.today()
-    # Get all appointments for the logged-in student (or all if not filtered yet)
-    appointments = Appointment.objects.all().order_by('-appointment_date', '-appointment_time')
 
+    # Available times for dropdown
+    all_times = ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
+                 "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
 
-    #allows to check available schedules
-    available_times = [
-        "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
-        "1:00 PM", "2:00 PM", "3:00 PM",
-    ]
-    
-    # booked out slows for selected date 
-    selected_date = request.POST.get('appointment_date', None)
     booked_times = []
+    selected_date = request.POST.get('appointment_date', None)
     if selected_date:
-        booked_times = Appointment.objects.filter(
-            appointment_date = selected_date
-        ).values_list('appointment_time', flat=True)
+        # Get all times already fully booked (5 students)
+        booked_times = [
+            t for t in all_times 
+            if Appointment.objects.filter(appointment_date=selected_date, 
+                                          appointment_time=datetime.strptime(t, "%I:%M %p").time()
+                                         ).count() >= 5
+        ]
+
+    # Filter available times
+    available_times = [t for t in all_times if t not in booked_times]
+
+    # Get all appointments for the student, ordered by most recent
+    appointments = Appointment.objects.filter(student=user).order_by('-appointment_date', '-appointment_time')
 
     if request.method == 'POST':
-        form = AppointmentForms(request.POST)
+        post_data = request.POST.copy()
+        if 'appointment_time' in post_data:
+            # Convert AM/PM string to 24-hour format for form
+            try:
+                t = datetime.strptime(post_data['appointment_time'], "%I:%M %p").time()
+                post_data['appointment_time'] = t.strftime("%H:%M")
+            except ValueError:
+                messages.error(request, "Invalid time format")
+                return redirect('core:student_appointments')
+
+        form = AppointmentForms(post_data)
         if form.is_valid():
             appointment_date = form.cleaned_data['appointment_date']
             appointment_time = form.cleaned_data['appointment_time']
 
-            # prvent from double booking by the same student
-            if Appointment.objects.filter(student=user, appointment_date=appointment_date).exists():
-                messages.error(request, "You already booked an appointment on this date")
+            # Limit 5 students per time slot
+            if Appointment.objects.filter(appointment_date=appointment_date,
+                                          appointment_time=appointment_time).count() >= 5:
+                messages.error(request, f"All slots for {appointment_time.strftime('%I:%M %p')} are FULL!")
                 return redirect('core:student_appointments')
 
-            # prevent full schedule for the slow. ONLY allows limited slots
-            # only 10 ppl will be included to take appointment in that specific date
-            if Appointment.objects.filter(appointment_date=appointment_date).count() >= 10:
-                messages.error(request, "All appointment slots for this day are FULL!")
-                return redirect('core:student_appointments')
-            
-            else:
-                appointment = form.save(commit=False)
-                appointment.student = user
-                appointment.status = 'Pending'
-                appointment.save()
-                messages.success(request, "Appointment Booked Successfully!")
-                return redirect('core:student_appointments')
+            # Save the appointment
+            appointment = form.save(commit=False)
+            appointment.student = user
+            appointment.status = 'Pending'
+            appointment.save()
+            messages.success(request, "Appointment booked successfully!")
+            return redirect('core:student_appointments')
+
         else:
-            messages.error(request, "Please coorect the errors below")
+            messages.error(request, "Please correct the errors below")
     else:
         form = AppointmentForms()
 
@@ -358,17 +368,24 @@ def student_appointments(request):
         'appointments': appointments,
         'available_times': available_times,
         'booked_times': booked_times,
-
     })
+
 
 @never_cache
 # @user_passes_test(is_registrar)
 def registrar_appointments(request):
-    appointments = Appointment.objects.all().order_by("-created_at")
+    appointments = Appointment.objects.all().order_by("-appointment_date")
 
-    context_head = header_context(request)
-    context_head["appointments"] = appointments
-    return render(request, "core/registrar_appointments.html", context_head)
+    # Pagination: Show only 5 appointments per page
+    paginator = Paginator(appointments, 5)  # 5 appointments per page
+    page_number = request.GET.get('page')  # Get the page number from the query params
+    page_obj = paginator.get_page(page_number)  # Get the current page object
+
+    context = {
+        'appointments': page_obj,  # Pass the paginated appointments
+    }
+
+    return render(request, "core/registrar_appointments.html", context)
 
 
 # Checks the admin user and display in the Dashboard of the student
@@ -470,20 +487,28 @@ def registrar_dashboard(request):
 @never_cache
 # REGISTRAR: Allows to view ll certificate request
 def registrar_certificates(request):
+    # Fetch all certificate requests, sorted by requested_at
     certificates = CertificateRequest.objects.all().order_by("-requested_at")
 
+    # Pagination: Show only 5 requests at a time
+    paginator = Paginator(certificates, 5)  # 5 certificates per page
+    page_number = request.GET.get('page')  # Get the page number from the query params
+    page_obj = paginator.get_page(page_number)  # Get the current page object
+
     context_head = header_context(request)
-    context_head["certificates"] = certificates
+    context_head["page_obj"] = page_obj  # Pass the page object to the template
 
     return render(request, "core/registrar_certificates.html", context_head)
 
+
+
+# THIS IS THE FUNCTION TO REQUEST CERTIFICATE FOR STUDENT
+@login_required
 def certificate_request_view(request):
     user = request.user
-    from .models import CertificateRequest
 
     # If user is not logged in (guest view)
     if not user.is_authenticated:
-        # Create a blank form (so you can still see it)
         form = CertificateRequestForm()
         previous_request = []  # no real data for guest
         messages.info(request, "You are viewing as a guest. Please log in to submit a request.")
@@ -500,20 +525,26 @@ def certificate_request_view(request):
             certificate = form.save(commit=False)
             certificate.student = user
             certificate.save()
+            # Use messages to show success after submission
             messages.success(request, "Your certificate request has been submitted successfully!")
-            return redirect('core:certificate_request')
+            
+            # Redirect to the same page to reset the form and success flag
+            return redirect('core:certificate_request')  # Ensure this URL is correct for your template
+
         else:
             messages.error(request, "Please correct the errors below.")
     else:
         form = CertificateRequestForm()
 
-    # show previous requests only for logged-in users
+    # Show previous requests only for logged-in users
     previous_request = CertificateRequest.objects.filter(student=user).order_by('-requested_at')
 
+    # No need to pop session here, we rely on the messages framework instead
     return render(request, 'core/certificate_request.html', {
         'form': form,
         'previous_request': previous_request,
     })
+
 
 
 def admin_register(request):
@@ -558,27 +589,31 @@ def is_registrar(user):
 # This is for REGISTRAR REGISTER
 def registrar_register(request):
     """Registrar REGISTRATION"""
-    # Force logout to any current session
+    # Force logout if any user is logged in
     if request.user.is_authenticated:
         logout(request)
 
     if request.method == "POST":
         form = RegistrarRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password"])
-            user.is_staff = True # This is the landmark/mark as registrar/staff
-            user.save()
+            # Save user
+            user = form.save()
 
-
-            # create registrar profile 
-            from .models import RegistrarProfile
+            # Create registrar profile
             RegistrarProfile.objects.create(user=user, role="Registrar")
 
-
-            messages.success(request, "Registra account created successfuly. Please proceed to login")
-            return redirect("core:login") # Redireting towards the login frame
-        
+            # Show success message and redirect
+            messages.success(
+                request,
+                "Registrar account created successfully. Please proceed to login."
+            )
+            return redirect("core:login")
+        else:
+            # Collect all form errors into a single string
+            error_text = " ".join(
+                [f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()]
+            )
+            messages.error(request, f"Error creating account: {error_text}")
     else:
         form = RegistrarRegistrationForm()
 

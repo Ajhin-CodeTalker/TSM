@@ -113,6 +113,7 @@ class OTPForm(forms.Form):
     code = forms.CharField(max_length=6)
 
 
+
 # Creating the appointment form
 class AppointmentForms(forms.ModelForm):
     class Meta:
@@ -188,12 +189,14 @@ class RegistrarRegistrationForm(forms.ModelForm):
         user.is_staff = True
         user.is_superuser= False
 
+        user.is_active = True # Ensure login
         if commit:
             user.save()
 
 
         return user
     
+
 
 # Admin
 # This is the admin access code

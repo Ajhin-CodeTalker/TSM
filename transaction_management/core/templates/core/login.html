@@ -192,12 +192,10 @@
 
 <div class="login-container">
     
-    <!-- This will pop up a alert message -->
+    <!-- Login-specific error messages only -->
     {% if messages %}
     {% for message in messages %}
-        {% if message.tags == 'error' %}
-            <div class="toast">{{ message }}</div>
-        {% endif %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
     {% endfor %}
     {% endif %}
 

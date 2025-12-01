@@ -96,5 +96,25 @@ document.addEventListener("DOMContentLoaded", () => {
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex justify-between items-center mt-4">
+        {% if appointments.has_previous %}
+            <a href="?page={{ appointments.previous_page_number }}"
+               class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Previous</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Previous</span>
+        {% endif %}
+
+        <span class="text-gray-600">Page {{ appointments.number }} of {{ appointments.paginator.num_pages }}</span>
+
+        {% if appointments.has_next %}
+            <a href="?page={{ appointments.next_page_number }}"
+               class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Next</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Next</span>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}

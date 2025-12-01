@@ -48,7 +48,7 @@
 
     table {
         width: 100%;
-        min-width: 600px; /* prevents breaking layout on small phones */
+        min-width: 600px;
         border-collapse: collapse;
     }
     th, td {
@@ -137,7 +137,6 @@
         transform: translateX(-50%) translateY(0);
     }
 
-    /* Responsive adjustments */
     @media (max-width: 640px) {
         .logout-button { padding: 10px 24px; font-size: 14px; }
         .logout-icon { width: 16px; height: 16px; }
@@ -147,6 +146,22 @@
     @keyframes ripple-animation {
         to { width: 300px; height: 300px; opacity: 0; }
     }
+
+    /* STATUS COLORS */
+    .status-pending { color: #b45309; font-weight: 600; }
+    .status-approved { color: #059669; font-weight: 600; }
+    .status-declined { color: #dc2626; font-weight: 600; }
+    .status-processing { color: #2563eb; font-weight: 600; }
+
+    /* ⭐ NEW: Released status color (BLUE) */
+    .status-released { color: #2563eb; font-weight: 600; }
+
+    /* ⭐ NEW: Scroll if more than 5 items */
+    .scroll-limit {
+        max-height: 300px;
+        overflow-y: auto;
+        display: block;
+    }
 </style>
 
 </head>
@@ -154,7 +169,7 @@
     <div class="container">
         <div class="header">
             <h2>Welcome, {{ user.first_name }}!</h2>
-           <!-- Logout button form using Canva style -->
+
             <form action="{% url 'core:logout' %}" method="post" style="position: relative;">
                 {% csrf_token %}
                 <button type="submit" class="logout-button" id="logout-btn" aria-label="Logout">
@@ -167,23 +182,13 @@
                 </button>
                 <div class="confirmation-message" id="confirmation-message">Successfully logged out!</div>
             </form>
-
-
-
         </div>
 
-        <!-- 
-            P.S This code is the tester account
-
-        <p class="status">Account Status: {{ account_status }}</p> 
-
-        -->
         {% if account_status %}
         <div class="mb-4 p-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded">
             {{ account_status }}
         </div>
         {% endif %}
-
 
         <div class="card-grid">
             <div class="card">
@@ -203,6 +208,10 @@
         <div class="section">
     <h3>Your Appointments</h3>
     {% if appointments %}
+
+        <!-- ⭐ scroll-limit wrapper -->
+        <div class="scroll-limit">
+
         <table>
             <thead>
                 <tr>
@@ -210,7 +219,7 @@
                     <th>Time</th>
                     <th>Purpose</th>
                     <th>Status</th>
-                    <th>Approved By</th>   <!-- NEW COLUMN -->
+                    <th>Approved By</th>
                 </tr>
             </thead>
             <tbody>
@@ -219,10 +228,19 @@
                         <td>{{ a.appointment_date }}</td>
                         <td>{{ a.appointment_time }}</td>
                         <td>{{ a.purpose }}</td>
-                        <td>{{ a.status }}</td>
+                        <td class="
+                            {% if a.status == 'Pending' %}status-pending
+                            {% elif a.status == 'Approved' %}status-approved
+                            {% elif a.status == 'Declined' %}status-declined
+                            {% elif a.status == 'Processing' %}status-processing
+                            {% elif a.status == 'Released' %}status-released
+                            {% endif %}
+                        ">
+                            {{ a.status }}
+                        </td>
                         <td>
                             {% if a.approved_by %}
-                                {{ a.approved_by.first_name }} {{ a.approved_by.last_name}} 
+                                {{ a.approved_by.first_name }} {{ a.approved_by.last_name}}
                             {% else %}
                                 —
                             {% endif %}
@@ -231,16 +249,21 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        </div>
+
     {% else %}
         <p>No appointments found.</p>
     {% endif %}
     <a href="{% url 'core:student_appointments' %}" class="btn">Book Appointment</a>
 </div>
 
-
         <div class="section">
             <h3>Your Certificate Requests</h3>
             {% if certificates %}
+
+                <div class="scroll-limit">
+
                 <table>
                     <thead>
                         <tr>
@@ -255,10 +278,19 @@
                             <tr>
                                 <td>{{ c.certificate_type }}</td>
                                 <td>{{ c.purpose }}</td>
-                                <td>{{ c.status }}</td>
+                                <td class="
+                                    {% if c.status == 'Pending' %}status-pending
+                                    {% elif c.status == 'Approved' %}status-approved
+                                    {% elif c.status == 'Declined' %}status-declined
+                                    {% elif c.status == 'Processing' %}status-processing
+                                    {% elif c.status == 'Released' %}status-released
+                                    {% endif %}
+                                ">
+                                    {{ c.status }}
+                                </td>
                                 <td>
                                     {% if c.approved_by %}
-                                        {{ c.approved_by.first_name }} {{ c.approved_by.last_name}} 
+                                        {{ c.approved_by.first_name }} {{ c.approved_by.last_name}}
                                     {% else %}
                                         —
                                     {% endif %}
@@ -267,6 +299,9 @@
                         {% endfor %}
                     </tbody>
                 </table>
+
+                </div>
+
             {% else %}
                 <p>No certificate requests yet.</p>
             {% endif %}
@@ -274,13 +309,11 @@
         </div>
     </div>
 
-
     <script>
     const logoutBtn = document.getElementById('logout-btn');
     const confirmationMsg = document.getElementById('confirmation-message');
 
     logoutBtn.addEventListener('click', (e) => {
-        // Ripple effect
         const rect = logoutBtn.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -298,14 +331,10 @@
         logoutBtn.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
 
-        // Show confirmation
         confirmationMsg.classList.add('show');
         setTimeout(() => confirmationMsg.classList.remove('show'), 2000);
     });
 </script>
-
-
-
 
 </body>
 </html>

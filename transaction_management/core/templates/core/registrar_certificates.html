@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 
-
 {% block content %}
 <div class="bg-white shadow-lg rounded-xl p-6 mt-4">
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-1">Certificate Requests</h2>
     <p class="text-gray-500 text-sm mb-5">View and manage all certificate requests.</p>
 
-    <!-- Responsive Table -->
-    <div class="overflow-x-auto rounded-lg border border-gray-200">
+    <!-- Scrollable Table -->
+    <div class="overflow-x-auto rounded-lg border border-gray-200" style="max-height: 400px; overflow-y: auto;">
         <table class="min-w-full text-sm">
             <thead class="bg-gray-100 border-b">
                 <tr>
@@ -22,38 +21,30 @@
             </thead>
 
             <tbody class="divide-y">
-                {% for c in certificates %}
+                {% for c in page_obj %}
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-4 py-3">{{ c.student.username }}</td>
                     <td class="px-4 py-3">{{ c.certificate_type }}</td>
                     <td class="px-4 py-3">{{ c.purpose }}</td>
-
                     <td class="px-4 py-3">
                         {% if c.supporting_document %}
                             <a href="{{ c.supporting_document.url }}"
                                class="text-blue-600 underline hover:text-blue-800"
-                               target="_blank">
-                                View File
-                            </a>
+                               target="_blank">View File</a>
                         {% else %}
                             <span class="text-gray-500">No File</span>
                         {% endif %}
                     </td>
-
                     <td class="px-4 py-3">{{ c.status }}</td>
-
                     <td class="px-4 py-3 text-center space-x-3">
                         <a href="{% url 'core:update_certificate_status' c.id 'Approved' %}"
                            class="text-green-600 font-medium hover:text-green-800">Approve</a>
-
                         <a href="{% url 'core:update_certificate_status' c.id 'Released' %}"
                            class="text-blue-600 font-medium hover:text-blue-800">Release</a>
-
                         <a href="{% url 'core:update_certificate_status' c.id 'Declined' %}"
                            class="text-red-600 font-medium hover:text-red-800">Reject</a>
                     </td>
                 </tr>
-
                 {% empty %}
                 <tr>
                     <td colspan="6" class="text-center py-6 text-gray-500">
@@ -63,6 +54,25 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex justify-between items-center mt-4">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Previous</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Previous</span>
+        {% endif %}
+
+        <span class="text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Next</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Next</span>
+        {% endif %}
     </div>
 
 </div>

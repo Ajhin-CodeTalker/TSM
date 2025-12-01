@@ -1,4 +1,3 @@
-
 {% block content %}
 <style>
   body {
@@ -75,7 +74,80 @@
     background: #f3f3f3;
     font-weight: bold;
   }
+
+  .success-message {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .error-message {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .form-section .errorlist {
+    color: red;
+    margin-top: 5px;
+  }
+
+  /* Popup Style */
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .popup-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    width: 80%;
+    max-width: 400px;
+  }
+
+  .popup-content h2 {
+    color: #28a745;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 30px;
+    color: #aaa;
+    cursor: pointer;
+  }
+
+  .close-btn:hover {
+    color: #000;
+  }
 </style>
+
+<!-- Popup Modal -->
+<div id="successPopup" class="popup" style="display:none;">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closePopup()">&times;</span>
+    <h2>Success!</h2>
+    <p>Your certificate request has been successfully sent.</p>
+    <button class="submit-btn" onclick="closePopup()" style="margin-top:15px;">OK</button>
+  </div>
+</div>
 
 <nav style="background-color: #004d00; padding: 10px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
   <a href="{% url 'core:student_dashboard' %}" style="color: white; margin: 0 15px; text-decoration: none; font-weight: bold;">Home</a>
@@ -85,13 +157,62 @@
 <div class="cert-container">
   <h1 style="text-align:center; margin-top:0;">Certificate Request</h1>
 
+  {% if messages %}
+    {% for message in messages %}
+      <div class="success-message">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if form.errors %}
+    <div class="error-message">
+      Please make sure all required fields are filled out correctly.
+    </div>
+  {% endif %}
+
   <div class="form-section">
-    <form method="POST" enctype="multipart/form-data">
+    <form id="certificateForm" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.as_p }}
+
+      {% for field in form %}
+        {% if field.errors %}
+          <div class="errorlist">
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
       <button type="submit" class="submit-btn">Submit Request</button>
     </form>
   </div>
 
 </div>
+
+<script>
+  function showPopup() {
+    document.getElementById("successPopup").style.display = "flex";
+  }
+
+  function closePopup() {
+    document.getElementById("successPopup").style.display = "none";
+    // Hide the success message after the popup is closed
+    document.querySelector('.success-message').style.display = "none";
+    // Reset the form fields after success
+    document.getElementById("certificateForm").reset();
+  }
+
+  // Show the popup and success message only if success is true
+  window.onload = function() {
+    // Hide success message if it's displayed
+    if (document.querySelector('.success-message')) {
+      document.querySelector('.success-message').style.display = 'block';
+      showPopup(); // Display the popup
+    }
+  };
+</script>
+
 {% endblock %}
