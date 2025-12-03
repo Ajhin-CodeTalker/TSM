@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* (kept your original styles) */
     body {
       margin: 0;
       padding: 0;
@@ -38,9 +37,11 @@
     .form-group input:focus {
       border-color: #006400; box-shadow: 0 0 0 3px rgba(0,100,0,0.1); outline: none;
     }
+
     .submit-btn { width:100%; padding:14px; background:#006400; color:white; border:none; border-radius:6px;
       font-weight:600; cursor:pointer; transition: 0.2s; }
     .submit-btn:hover { background:#004d26; }
+
     .footer-link { text-align:center; margin-top:20px; }
     .footer-link a { color:#006400; text-decoration:none; font-weight:500; }
     .footer-link a:hover { text-decoration:underline; }
@@ -55,10 +56,25 @@
       user-select: none;
     }
 
-    /* Field error text */
     .field-error { color: #dc2626; font-size: 13px; margin-top: 6px; }
 
-    /* Popup styles (unchanged) */
+    /* Strength bar */
+    .strength-meter {
+      width: 100%;
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-level {
+      height: 100%;
+      width: 0%;
+      background: red;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    /* Popup */
     .popup-modal { position: fixed; inset: 0; display: none; justify-content: center; align-items: center;
       background: rgba(0,0,0,0.45); z-index: 9999; animation: fadeIn 0.3s ease; }
     .popup-modal.show { display: flex; }
@@ -69,8 +85,9 @@
     .popup-message { font-size: 16px; margin-bottom: 14px; }
     .popup-btn { padding: 10px 20px; background: #006400; border: none; color: white; border-radius: 6px;
       cursor: pointer; font-weight: 600; }
-    @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); }
-      75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+
+    @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes popupScale { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
@@ -88,7 +105,6 @@
         <p>Create your administrator account</p>
       </div>
 
-      <!-- show non-field errors / field errors summary -->
       {% if form.non_field_errors %}
         <div class="field-error">
           {% for err in form.non_field_errors %}
@@ -116,9 +132,15 @@
           {% endif %}
         </div>
 
-        <div class="form-group">
+          <div class="form-group">
           <label>Username</label>
           {{ form.username }}
+
+          <!-- Username hint -->
+          <div style="font-size: 12px; color: #ff0000; margin-top: 4px;">
+            Make sure there are no spaces in your username.
+          </div>
+
           {% if form.username.errors %}
             <div class="field-error">{{ form.username.errors.0 }}</div>
           {% endif %}
@@ -132,10 +154,16 @@
           {% endif %}
         </div>
 
+        <!-- PASSWORD WITH STRENGTH METER -->
         <div class="form-group" style="position: relative;">
           <label>Password</label>
           {{ form.password }}
           <span class="toggle-pass" onclick="togglePass('id_password')">👁️</span>
+
+          <div class="strength-meter">
+            <div id="strength-bar" class="strength-level"></div>
+          </div>
+
           {% if form.password.errors %}
             <div class="field-error">{{ form.password.errors.0 }}</div>
           {% endif %}
@@ -167,7 +195,7 @@
     </div>
   </div>
 
-  <!-- POPUP STRUCTURE -->
+  <!-- POPUP -->
   <div id="popupModal" class="popup-modal">
     <div id="popupContent" class="popup-content">
       <p id="popupMessage" class="popup-message"></p>
@@ -187,7 +215,7 @@ function showPopup(message, type="error") {
 
   if (type === "error") {
     content.style.animation = "shake 0.3s";
-    setTimeout(() => (content.style.animation = ""), 300);
+    setTimeout(() => content.style.animation = "", 300);
   }
 
   modal.classList.add("show");
@@ -197,32 +225,45 @@ function closePopup() {
   document.getElementById("popupModal").classList.remove("show");
 }
 
-document.getElementById("adminForm").addEventListener("submit", function(e) {
-  // Optional: client-side password match check for quicker UX
-  const password = document.getElementById("id_password").value;
-  const confirm = document.getElementById("id_confirm_password").value;
+document.addEventListener("DOMContentLoaded", function () {
+  const passwordInput = document.getElementById("id_password");
+  const confirmInput = document.getElementById("id_confirm_password");
+  const strengthBar = document.getElementById("strength-bar");
 
-  if (password !== confirm) {
-      e.preventDefault();
-      showPopup("Passwords do not match!", "error");
-      return;
-  }
+  passwordInput.addEventListener("input", function () {
+      const val = passwordInput.value;
+      let score = 0;
 
-  // NOTE: Access-code verification is handled on the server-side only (do not rely on frontend for security)
+      if (val.length >= 6) score += 25;
+      if (val.length >= 10) score += 25;
+      if (/[A-Z]/.test(val)) score += 25;
+      if (/[0-9]/.test(val)) score += 25;
+
+      strengthBar.style.width = score + "%";
+
+      if (score <= 25) strengthBar.style.background = "#d32f2f";
+      else if (score <= 50) strengthBar.style.background = "#ff9800";
+      else if (score <= 75) strengthBar.style.background = "#fdd835";
+      else strengthBar.style.background = "#2E7D32";
+  });
+
+  document.getElementById("adminForm").addEventListener("submit", function(e) {
+      if (passwordInput.value !== confirmInput.value) {
+          e.preventDefault();
+          showPopup("Passwords do not match!", "error");
+      }
+  });
 });
 
-// toggle password visibility
 function togglePass(id) {
   const input = document.getElementById(id);
   if (!input) return;
-  input.type = (input.type === "password") ? "text" : "password";
+  input.type = input.type === "password" ? "text" : "password";
 }
 </script>
 
-<!-- Show server-side errors in popup (makes UX clearer) -->
 {% if form.errors %}
 <script>
-  // show a clean text summary of errors; escape for JS
   showPopup("{{ form.errors.as_text|escapejs }}", "error");
 </script>
 {% endif %}

@@ -185,6 +185,80 @@
             }
         }
 
+        /* --- Popup Overlay (same design as your form error popup) --- */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+/* Popup box */
+.popup-box {
+    background: #fff;
+    padding: 24px 30px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    animation: popupFadeIn 0.3s ease;
+    color: #333;
+}
+
+/* Title */
+.popup-box h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #d32f2f;
+}
+
+/* Error container */
+.popup-errors {
+    margin-bottom: 18px;
+}
+
+.popup-errors p {
+    background: #ffe6e6;
+    border-left: 4px solid #d32f2f;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #a60000;
+}
+
+/* Close button */
+.close-popup {
+    width: 100%;
+    padding: 10px;
+    background: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.close-popup:hover {
+    background: #b71c1c;
+}
+
+/* Popup animation */
+@keyframes popupFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
     </style>
 </head>
 
@@ -193,11 +267,34 @@
 <div class="login-container">
     
     <!-- Login-specific error messages only -->
+<div class="login-container">
+
+    <!-- Login-specific error messages only -->
     {% if messages %}
-    {% for message in messages %}
-        <div class="alert {{ message.tags }}">{{ message }}</div>
-    {% endfor %}
+        {% for message in messages %}
+            {% if message.tags == "error" %}
+                <div id="errorPopup" class="popup-overlay">
+                    <div class="popup-box">
+                        <h3>Error:</h3>
+
+                        <div class="popup-errors">
+                            <p>
+                                {% if "invalid" in message|stringformat:"s"|lower %}
+                                    Invalid Email or Password
+                                {% else %}
+                                    {{ message }}
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <button class="close-popup" onclick="closePopup()">Close</button>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
     {% endif %}
+
+
 
 
     <div class="login-header">
@@ -294,7 +391,12 @@
         togglePassword.textContent = type === "password" ? "👁" : "🙈";
     });
 </script>
-
+<script>
+function closePopup() {
+    const popup = document.getElementById("errorPopup");
+    if (popup) popup.style.display = "none";
+}
+</script>
 
 </body>
 </html>

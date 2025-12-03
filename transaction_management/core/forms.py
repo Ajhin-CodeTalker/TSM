@@ -7,6 +7,8 @@ from .models import CertificateRequest
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
 from .models import AdminProfile
+from django.core.validators import RegexValidator
+
 
 YEAR_LEVEL_CHOICES = [
     ("1st Year", "1st Year"),
@@ -18,6 +20,8 @@ class StudentRegistrationForm(forms.ModelForm):
     # --- User fields ---
     username = forms.CharField(
         max_length=50,
+        validators=[RegexValidator(r'^[\w\s]+$', 'Username can only contain letters, numbers, and spaces.')],
+
         widget=forms.TextInput(attrs={"placeholder": "Username"})
     )
 

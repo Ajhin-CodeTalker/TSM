@@ -9,7 +9,7 @@
 
     <script src="https://kit.fontawesome.com/cda339b82d.js" crossorigin="anonymous"></script>
 
-    <!-- ========= CANVA DESIGN CSS ========= -->
+    <!-- CSS Design -->
     <style>
         body {
             box-sizing: border-box;
@@ -152,7 +152,7 @@
 
         .signin-link a:hover { color: #FFD700; }
 
-        /* Error popup (your original popup) */
+        /* Error popup  */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -198,25 +198,41 @@
 </head>
 <body>
 
-    <!-- ========== POPUP ERROR (Django errors) ========== -->
+    <!--  Popup Error  -->
     {% if form.errors %}
-    <div id="errorPopup" class="popup-overlay">
-        <div class="popup-box">
-            <h3>Form Errors:</h3>
-            <div class="popup-errors">
-                {{ form.errors }}
+        <div id="errorPopup" class="popup-overlay">
+            <div class="popup-box">
+                <h3>Form Errors:</h3>
+                <div class="popup-errors">
+                    {% for field, errors in form.errors.items %}
+                        <div>
+                            <strong>{{ field|capfirst }}:</strong>
+                            <ul>
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                    
+                    {% if form.username.errors %}
+                        <div class="additional-error">
+                            <p>Make sure there are no spaces in your username</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="close-popup" onclick="closePopup()">Close</button>
             </div>
-            <button class="close-popup" onclick="closePopup()">Close</button>
         </div>
-    </div>
     {% endif %}
+
 
     <div class="container">
         <div class="header">
             <h1>Sign Up</h1>
         </div>
 
-        <!-- ========== REAL FORM ========== -->
+        <!--  Form  -->
         <form method="post" enctype="multipart/form-data" action="{% url 'core:register' %}">
             {% csrf_token %}
 
@@ -258,7 +274,12 @@
                 <label>Student Number</label>
                 <div class="input-wrapper">
                     <span class="input-icon">#️⃣</span>
-                    <input type="text" name="student_number" value="{{ form.data.student_number }}" required>
+                    <input type="text" 
+                        name="student_number" 
+                        value="{{ form.data.student_number }}" 
+                        required 
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
                 </div>
             </div>
 
@@ -293,12 +314,33 @@
 
             <div class="form-group">
                 <label>Password</label>
-                <div class="input-wrapper">
-                    <span class="input-icon">🔒</span>
-                    <input type="password" id="password" name="password" required>
-                    <button type="button" class="password-toggle" onclick="togglePass('password', this)">👁️</button>
+
+                <!-- Outer wrapper to ensure vertical stacking -->
+                <div style="width: 100%; display: flex; flex-direction: column; gap: 6px;">
+
+                    <!-- Input and eye button container -->
+                    <div class="input-wrapper" style="position: relative;">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="password" required style="padding-right: 45px;">
+                        <button type="button" class="password-toggle" onclick="togglePass('password', this)">👁️</button>
+                    </div>
+
+                    <!-- Strength indicator BELOW -->
+                    <div id="password-strength" style="width: 100%;">
+                        <div id="strength-bar" style="
+                            height: 6px;
+                            width: 0%;
+                            background: red;
+                            border-radius: 4px;
+                            transition: width 0.3s ease, background 0.3s ease;">
+                        </div>
+                        <small id="strength-text" style="font-size: 0.8rem; color: #333;"></small>
+                    </div>
+
                 </div>
             </div>
+
+
 
             <div class="form-group">
                 <label>Confirm Password</label>
@@ -329,6 +371,51 @@
         const popup = document.getElementById("errorPopup");
         if (popup) popup.style.display = "none";
     }
+
+
+    // Password strength indicator
+document.getElementById("password").addEventListener("input", function () {
+    const password = this.value;
+    const bar = document.getElementById("strength-bar");
+    const text = document.getElementById("strength-text");
+
+    let strength = 0;
+
+    // Length
+    if (password.length >= 6) strength++;
+    if (password.length >= 10) strength++;
+
+    // Character variety
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    // Strength percentage
+    let width = (strength / 5) * 100;
+
+    // Bar + Text Display
+    bar.style.width = width + "%";
+
+    if (strength <= 1) {
+        bar.style.background = "red";
+        text.textContent = "Weak";
+        text.style.color = "red";
+    } else if (strength === 2) {
+        bar.style.background = "orange";
+        text.textContent = "Fair";
+        text.style.color = "orange";
+    } else if (strength === 3) {
+        bar.style.background = "#FFD700";  // Gold (your theme)
+        text.textContent = "Good";
+        text.style.color = "#b8860b";
+    } else if (strength >= 4) {
+        bar.style.background = "#006400"; // Strong green (your theme)
+        text.textContent = "Strong";
+        text.style.color = "#006400";
+    }
+});
+
+
 </script>
 
 </body>

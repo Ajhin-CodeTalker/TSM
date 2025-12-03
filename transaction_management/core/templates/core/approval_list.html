@@ -12,20 +12,35 @@
     </div>
 
     <div id="mobileMenu" class="hidden flex-col px-4 pb-4 space-y-3 text-gray-700">
-        <a href="{% url 'core:registrar_dashboard' %}" class="block hover:text-blue-600">Home</a>
-        <a href="{% url 'core:registrar_appointments' %}" class="block hover:text-blue-600">Appointments</a>
-        <a href="{% url 'core:registrar_certificates' %}" class="block hover:text-blue-600">Certificates</a>
-        <a href="{% url 'core:approval_list' %}" class="block text-blue-600 font-semibold">Pending Accounts</a>
+        <a href="{% url 'core:registrar_dashboard' %}" 
+           class="block {% if request.resolver_match.url_name == 'registrar_dashboard' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Home</a>
+
+        <a href="{% url 'core:registrar_appointments' %}" 
+           class="block {% if request.resolver_match.url_name == 'registrar_appointments' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Appointments</a>
+
+        <a href="{% url 'core:registrar_certificates' %}" 
+           class="block {% if request.resolver_match.url_name == 'registrar_certificates' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Certificates</a>
+
+        <a href="{% url 'core:approval_list' %}" 
+           class="block {% if request.resolver_match.url_name == 'approval_list' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Pending Accounts</a>
+
         <a href="{% url 'core:logout' %}" class="block hover:text-red-600">Logout</a>
     </div>
 </div>
 
 <!-- 🖥 Desktop Navbar -->
 <nav class="hidden md:flex space-x-8 text-gray-600 font-medium px-6 py-3 border-b bg-white shadow-sm">
-    <a href="{% url 'core:registrar_dashboard' %}" class="hover:text-blue-600">Home</a>
-    <a href="{% url 'core:registrar_appointments' %}" class="hover:text-blue-600">Appointments</a>
-    <a href="{% url 'core:registrar_certificates' %}" class="hover:text-blue-600">Certificates</a>
-    <a href="{% url 'core:approval_list' %}" class="text-blue-600 font-semibold">Pending Accounts</a>
+    <a href="{% url 'core:registrar_dashboard' %}" 
+       class="{% if request.resolver_match.url_name == 'registrar_dashboard' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Home</a>
+
+    <a href="{% url 'core:registrar_appointments' %}" 
+       class="{% if request.resolver_match.url_name == 'registrar_appointments' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Appointments</a>
+
+    <a href="{% url 'core:registrar_certificates' %}" 
+       class="{% if request.resolver_match.url_name == 'registrar_certificates' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Certificates</a>
+
+    <a href="{% url 'core:approval_list' %}" 
+       class="{% if request.resolver_match.url_name == 'approval_list' %}text-blue-600 font-semibold{% else %}hover:text-blue-600{% endif %}">Pending Accounts</a>
 </nav>
 
 <!-- JS TOGGLE -->

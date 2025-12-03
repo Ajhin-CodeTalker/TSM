@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrar Registration</title>
+
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body {
       height:100%;
       margin:0;
       padding:0;
-      overflow:hidden; /* prevents page scroll */
+      overflow:hidden;
     }
     body {
       display:flex;
@@ -25,14 +26,13 @@
       padding:32px;
       width:100%;
       max-width:500px;
-      max-height: calc(100vh - 40px); /* fit viewport minus small margin */
-      overflow-y: auto; /* internal scroll only if needed */
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* vertically center content */
+      justify-content: center;
       animation:fadeInUp 0.6s ease-out;
     }
-
 
     @keyframes fadeInUp {
       from {opacity:0; transform:translateY(30px);}
@@ -61,35 +61,50 @@
 
     label { display:block; color:#333; font-weight:600; margin-bottom:6px; font-size:14px; }
     input { width:100%; padding:12px 14px; border-radius:12px; border:2px solid #e0e0e0; background:#fafafa; font-size:15px; transition:all 0.3s ease; }
+
     input:hover { border-color:#F6E96B; background:#fff; }
-    input:focus { outline:none; border-color:#2E7D32; background:#fff; box-shadow:0 0 0 4px rgba(46,125,50,0.1); }
+    input:focus {
+      outline:none; 
+      border-color:#2E7D32; 
+      background:#fff; 
+      box-shadow:0 0 0 4px rgba(46,125,50,0.1);
+    }
 
     .password-strength { height:4px; background:#e0e0e0; border-radius:2px; margin-top:6px; overflow:hidden; }
     .password-strength-bar { height:100%; width:0%; background:#2E7D32; transition:width 0.3s ease; border-radius:2px; }
 
-    .register-button {
-      width:100%; padding:16px; background:#2E7D32; color:white; border:none; border-radius:12px;
-      font-size:16px; font-weight:700; cursor:pointer; transition:all 0.3s ease;
-      position:relative; overflow:hidden;
+    .show-pass {
+      position: absolute;
+      right: 14px;
+      top: 38px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #777;
+      user-select: none;
     }
-    .register-button:hover { background:#1B5E20; transform:translateY(-2px); box-shadow:0 8px 20px rgba(46,125,50,0.3); }
+
+    .register-button {
+      width:100%; padding:16px; background:#2E7D32; color:white; border:none; 
+      border-radius:12px; font-size:16px; font-weight:700; cursor:pointer;
+      transition:all 0.3s ease; position:relative; overflow:hidden;
+    }
+    .register-button:hover { background:#1B5E20; transform:translateY(-2px); }
 
     .login-link { text-align:center; margin-top:24px; font-size:14px; color:#666; }
-    .login-link a { color:#2E7D32; font-weight:600; text-decoration:none; transition:color 0.3s ease; }
-    .login-link a:hover { color:#1B5E20; text-decoration:underline; }
+    .login-link a { color:#2E7D32; font-weight:600; text-decoration:none; }
 
     .error-message { color:#d32f2f; font-size:12px; margin-top:6px; display:none; }
-    .success-message { background:#e8f5e9; color:#2E7D32; padding:12px 16px; border-radius:8px; margin-bottom:20px; font-size:14px; display:none; border-left:4px solid #2E7D32; }
 
-    @media(max-width:480px) {
-      .registration-container { padding:24px 20px; }
-      h1 { font-size:22px; }
-      .logo-circle { width:64px; height:64px; }
-      .logo-text { font-size:24px; }
-      .field-pair { grid-template-columns:1fr; gap:12px; }
+    .success-message {
+      background:#e8f5e9; 
+      color:#2E7D32; 
+      padding:12px 16px;
+      border-radius:8px; 
+      margin-bottom:20px; 
+      font-size:14px;
+      border-left:4px solid #2E7D32;
     }
 
-    /* error toast styles */
     .error-toast {
       position: fixed;
       top: 50px;
@@ -103,158 +118,175 @@
       max-width: 300px;
       animation: slideIn 0.5s ease-out;
     }
-
-    .error-toast .note {
-      font-size: 13px;
-      margin: 6px 0;
-      color: #ffcccc;
-    }
-
-    .error-toast ul {
-      margin-top: 6px;
-      padding-left: 18px;
-      font-size: 13px;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
   </style>
 </head>
+
 <body>
 
-  <div class="registration-container">
-    <!-- RIGHT-SIDE ERROR NOTIFICATION -->
-    {% if form.errors %}
-      <div id="error-notification" class="error-toast">
-        <strong>⚠️ Oops! Something went wrong:</strong>
-        <p class="note">Make sure there are no spaces in your username or access code.</p>
-        <ul>
-          {% for field in form %}
-            {% for error in field.errors %}
-              <li>{{ error }}</li>
-            {% endfor %}
-          {% endfor %}
-          {% for error in form.non_field_errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
+<div class="registration-container">
 
-    <div class="logo-section">
-      <div class="logo-circle"><span class="logo-text">R</span></div>
-      <h1>Registrar Registration</h1>
-      <p class="subtitle">Create your account to get started</p>
-    </div>
+  <!-- DJANGO FORM ERRORS (TOAST) -->
+  {% if form.errors %}
+  <div id="error-notification" class="error-toast">
+    <strong>⚠️ Oops! Something went wrong:</strong>
+    <p class="note">Make sure there are no spaces in your username or access code.</p>
+    <ul>
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
-    <div class="success-message" id="success-message">Registration successful! Welcome aboard.</div>
-
-    <form id="registration-form" method="POST">
-      {% csrf_token %}
-
-      <div class="field-pair">
-        <div>
-          <label for="username">Username</label>
-          {{ form.username }}
-          <div class="error-message" id="username-error">Username is required</div>
+  <!-- DJANGO SUCCESS MESSAGE -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <div class="success-message">
+          {{ message }}
         </div>
-        <div>
-          <label for="email">Email</label>
-          {{ form.email }}
-          <div class="error-message" id="email-error">Enter a valid email</div>
-        </div>
-      </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
-      <div class="field-pair">
-        <div>
-          <label for="password">Password</label>
-          {{ form.password }}
-          <div class="password-strength"><div id="strength-bar" class="password-strength-bar"></div></div>
-          <div class="error-message" id="password-error">Password must be at least 6 characters</div>
-        </div>
-        <div>
-          <label for="confirm_password">Confirm Password</label>
-          {{ form.confirm_password }}
-          <div class="error-message" id="confirm-error">Passwords do not match</div>
-        </div>
-      </div>
-
-      <div class="field-pair">
-        <div>
-          <label for="first_name">First Name</label>
-          {{ form.first_name }}
-          <div class="error-message" id="first-name-error">First name is required</div>
-        </div>
-        <div>
-          <label for="last_name">Last Name</label>
-          {{ form.last_name }}
-          <div class="error-message" id="last-name-error">Last name is required</div>
-        </div>
-      </div>
-      <div>
-        <label for="access_code">Registrar Access Code</label>
-        {{ form.access_code }}
-        <div class="error-message" id="access-code-error">Access code is required</div>
-      </div>
-
-      <button type="submit" class="register-button">Register</button>
-    </form>
-
-    <p class="login-link">
-      Already have an account? <a href="{% url 'core:login' %}">Login here</a>
-    </p>
+  <div class="logo-section">
+    <div class="logo-circle"><span class="logo-text">R</span></div>
+    <h1>Registrar Registration</h1>
+    <p class="subtitle">Create your account to get started</p>
   </div>
 
-  <script>
-    const form = document.getElementById('registration-form');
-    const passwordInput = form.querySelector('input[name="password"]');
-    const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
-    const strengthBar = document.getElementById('strength-bar');
-    const successMessage = document.getElementById('success-message');
+  <form id="registration-form" method="POST">
+    {% csrf_token %}
 
-    if(passwordInput){
-      passwordInput.addEventListener('input', function(){
-        let val = passwordInput.value;
-        let score = 0;
-        if(val.length >= 6) score += 25;
-        if(val.length >= 10) score += 25;
-        if(/[A-Z]/.test(val)) score += 25;
-        if(/[0-9]/.test(val)) score += 25;
-        score = Math.min(100,score);
-        strengthBar.style.width = score+'%';
-        if(score<=25) strengthBar.style.background='#d32f2f';
-        else if(score<=50) strengthBar.style.background='#ff9800';
-        else if(score<=75) strengthBar.style.background='#fdd835';
-        else strengthBar.style.background='#2E7D32';
-      });
+    <div class="field-pair">
+      <div>
+        <label for="username">Username</label>
+        {{ form.username }}
+        <div class="error-message" id="username-error">Username is required</div>
+      </div>
+      <div>
+        <label for="email">Email</label>
+        {{ form.email }}
+        <div class="error-message" id="email-error">Enter a valid email</div>
+      </div>
+    </div>
+
+    <div class="field-pair">
+      <div style="position: relative;">
+        <label for="password">Password</label>
+        {{ form.password }}
+        <span class="show-pass" onclick="togglePassword('id_password', this)">👁️</span>
+
+        <div class="password-strength">
+          <div id="strength-bar" class="password-strength-bar"></div>
+        </div>
+
+      </div>
+
+      <div style="position: relative;">
+        <label for="confirm_password">Confirm Password</label>
+        {{ form.confirm_password }}
+        <span class="show-pass" onclick="togglePassword('id_confirm_password', this)">👁️</span>
+
+        <div class="error-message" id="confirm-error">Passwords do not match</div>
+      </div>
+    </div>
+
+    <div class="field-pair">
+      <div>
+        <label for="first_name">First Name</label>
+        <input type="text"
+               name="first_name"
+               value="{{ form.first_name.value|default:'' }}"
+               required
+               pattern="[A-Za-z ]+"
+               oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')">
+      </div>
+
+      <div>
+        <label for="last_name">Last Name</label>
+        <input type="text"
+               name="last_name"
+               value="{{ form.last_name.value|default:'' }}"
+               required
+               pattern="[A-Za-z ]+"
+               oninput="this.value = this.value.replace(/[^A-Za-z ]/g, '')">
+      </div>
+    </div>
+
+    <div>
+      <label for="access_code">Registrar Access Code</label>
+      {{ form.access_code }}
+    </div>
+
+    <button type="submit" class="register-button">Register</button>
+
+  </form>
+
+  <p class="login-link">
+    Already have an account? <a href="{% url 'core:login' %}">Login here</a>
+  </p>
+</div>
+
+<script>
+
+  function togglePassword(id, icon) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    if (input.type === "password") {
+      input.type = "text";
+      icon.textContent = "🙈";
+    } else {
+      input.type = "password";
+      icon.textContent = "👁️";
     }
+  }
 
-    form.addEventListener('submit', function(e){
-      let valid=true;
-      document.querySelectorAll('.error-message').forEach(msg=>msg.style.display='none');
+  const form = document.getElementById('registration-form');
+  const passwordInput = form.querySelector('input[name="password"]');
+  const confirmPasswordInput = form.querySelector('input[name="confirm_password"]');
+  const strengthBar = document.getElementById('strength-bar');
 
-      if(passwordInput && confirmPasswordInput && passwordInput.value!==confirmPasswordInput.value){
-        e.preventDefault();
-        document.getElementById('confirm-error').style.display='block';
-        valid=false;
-      }
-
-      if(valid && successMessage){
-        successMessage.style.display='block';
-        setTimeout(()=>{successMessage.style.display='none';},5000);
-      }
+  if(passwordInput){
+    passwordInput.addEventListener('input', function(){
+      let val = passwordInput.value;
+      let score = 0;
+      if(val.length >= 6) score += 25;
+      if(val.length >= 10) score += 25;
+      if(/[A-Z]/.test(val)) score += 25;
+      if(/[0-9]/.test(val)) score += 25;
+      strengthBar.style.width = Math.min(100,score)+'%';
     });
+  }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const errorToast = document.getElementById('error-notification');
-      if(errorToast){
-        setTimeout(() => {
-          errorToast.style.display = 'none';
-        }, 5000);
-      }
-    });
-  </script>
+  /* CLIENT-SIDE VALIDATION (NO SUCCESS MESSAGE ANYMORE) */
+  form.addEventListener('submit', function(e){
+    let valid=true;
+    document.querySelectorAll('.error-message').forEach(msg=>msg.style.display='none');
+
+    if(passwordInput && confirmPasswordInput && passwordInput.value!==confirmPasswordInput.value){
+      e.preventDefault();
+      document.getElementById('confirm-error').style.display='block';
+      valid=false;
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const errorToast = document.getElementById('error-notification');
+    if(errorToast){
+      setTimeout(() => {
+        errorToast.style.display = 'none';
+      }, 8000);
+    }
+  });
+
+</script>
+
 </body>
 </html>

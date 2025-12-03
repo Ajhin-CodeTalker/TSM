@@ -125,28 +125,33 @@ def register(request):
     return render(request, "core/register.html", {"form": form})
 
 
-@login_required
+@never_cache
 def waiting_for_approval(request):
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = None
+    user = request.user if request.user.is_authenticated else None
+    profile = None
+    account_status = "Please log in with the credentials you used to register"
 
-    # Handle states
-    if profile is None:
-        messages.warning(request, "Your account has been created but your profile is incomplete or missing.")
+    if user:
+        try:
+            profile = Profile.objects.get(user=user)
+            if profile.is_verified_email and not profile.is_approved_by_registrar:
+                account_status = "Your email is verified! Waiting for registrar approval."
+            elif not profile.is_verified_email:
+                account_status = "Please verify your email to continue."
+            elif profile.is_approved_by_registrar:
+                return redirect("core:student_dashboard")  # already approved
+        except Profile.DoesNotExist:
+            profile = None
     else:
-        if profile.is_verified_email and not profile.is_approved_by_registrar:
-            messages.info(request, "Your email is verified! Your account is now waiting for registrar approval.")
-        elif not profile.is_verified_email:
-            messages.warning(request, "Please verify your email to continue.")
-        elif profile.is_approved_by_registrar:
-            messages.success(request, "Your account has already been approved!")
+        # For anonymous visitors, show the approval page as a notification
+        account_status = "Your account is pending approval. Please log in with the credentials you used to register."
 
-    return render(request, "core/waiting_for_approval.html", {
+    return render(request, "core/waiting_status.html", {
         "profile": profile,
+        "account_status": account_status,
     })
-    
+
+
 def waiting_status(request, user_id):
     user = get_object_or_404(User, id=user_id)
     profile = get_object_or_404(Profile, user=user)
@@ -158,59 +163,51 @@ def waiting_status(request, user_id):
     return render(request, "core/waiting_status.html", context)
 # THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
-    """
-    Types of roles that can login for:
-    - Students
-    - Registrars
-    - Admins (superuser)
-    """
-
     if request.method == "POST":
         email_or_username = request.POST.get("email")
         password = request.POST.get("password")
 
-        # login is possible for username or gmail/email
+        # Try to get username if email was entered
         try:
             user_obj = User.objects.get(email=email_or_username)
             username = user_obj.username
         except User.DoesNotExist:
             username = email_or_username
 
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            # This prevents Django from overriding the redirect of the django administration to the dashboard
-            # for superusers and sending them to /admin.
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
-
-            login(request, user)
-            
-            # will stll provide a button for /admin access.
-            if user.is_superuser:
-                messages.success(request, f"Welcome Admin {user.username}!")
-                return redirect("core:registrar_dashboard")
-
-            # Registrar / Staff they have the same dashboard
-            if user.is_staff:
-                messages.success(request, f"Welcome Registrar {user.username}!")
-                return redirect("core:registrar_dashboard")
-
-            # Student login
-            try:
-                profile = user.profile
-
-                # Student valid but still pending approval
-                if not profile.is_approved_by_registrar:
+        # Custom authentication for inactive students
+        try:
+            user = User.objects.get(username=username)
+            # Allow pending students to login temporarily
+            if not user.is_active and hasattr(user, 'profile') and not user.profile.is_approved_by_registrar:
+                # Check password manually
+                if user.check_password(password):
+                    user.backend = 'django.contrib.auth.backends.ModelBackend'
+                    login(request, user)
                     return redirect("core:waiting_for_approval")
+                else:
+                    messages.error(request, "Invalid credentials.")
+                    return redirect("core:login")
+        except User.DoesNotExist:
+            user = None
 
-            except Profile.DoesNotExist:
-                # If no profile exists it will be sent to student dashboard
-                pass
+        # Standard authentication for active users
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
 
+            # Redirect pending students to waiting page
+            if hasattr(user, 'profile') and not user.profile.is_approved_by_registrar:
+                return redirect("core:waiting_for_approval")
+
+            # Admins and staff
+            if user.is_superuser or user.is_staff:
+                return redirect("core:registrar_dashboard")
+
+            # Regular student
             return redirect("core:student_dashboard")
-
         else:
             messages.error(request, "Invalid email/username or password.")
+            return redirect("core:login")
 
     return render(request, "core/login.html")
 
@@ -344,19 +341,32 @@ def student_appointments(request):
             appointment_date = form.cleaned_data['appointment_date']
             appointment_time = form.cleaned_data['appointment_time']
 
+            # Prevent same student from double-booking
+            if Appointment.objects.filter(
+                student=user,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time
+            ).exists():
+                messages.error(request, "You already booked this time slot.")
+                return redirect('core:student_appointments')
+
             # Limit 5 students per time slot
-            if Appointment.objects.filter(appointment_date=appointment_date,
-                                          appointment_time=appointment_time).count() >= 5:
+            if Appointment.objects.filter(
+                appointment_date=appointment_date,
+                appointment_time=appointment_time
+            ).count() >= 5:
                 messages.error(request, f"All slots for {appointment_time.strftime('%I:%M %p')} are FULL!")
                 return redirect('core:student_appointments')
 
-            # Save the appointment
+            # Save appointment
             appointment = form.save(commit=False)
             appointment.student = user
             appointment.status = 'Pending'
             appointment.save()
+
             messages.success(request, "Appointment booked successfully!")
             return redirect('core:student_appointments')
+
 
         else:
             messages.error(request, "Please correct the errors below")
