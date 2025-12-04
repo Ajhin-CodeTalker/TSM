@@ -1,27 +1,19 @@
 from .models import AdminProfile, RegistrarProfile, Profile
 from django.shortcuts import redirect
 
-
 def get_user_role(user):
-    """
-    Returns the role of a user based on which profile exists.
-    """
-    if hasattr(user, 'adminprofile'):
-        return user.adminprofile.role
-    elif hasattr(user, 'registrarprofile'):
+    if hasattr(user, 'registrarprofile') and user.registrarprofile is not None:
         return user.registrarprofile.role
-    elif hasattr(user, 'profile'):
-        # Student
+    if hasattr(user, 'adminprofile') and user.adminprofile is not None:
+        return user.adminprofile.role
+    if hasattr(user, 'profile') and user.profile is not None:
         return "Student"
-    else:
-        return "Unknown"
-    
-
+    return "Unknown"
 
 def header_context(request):
     user = request.user
     profile = getattr(user, 'profile', None)
-
+    registrar_profile = getattr(request.user, "registrarprofile", None)
     # Get Role
     role = get_user_role(user)
 

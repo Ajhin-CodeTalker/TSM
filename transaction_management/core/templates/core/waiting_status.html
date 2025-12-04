@@ -25,13 +25,15 @@
                             <p class="font-semibold text-green-700 text-lg">Your account is approved!</p>
                             <p class="text-gray-600 text-sm">You may proceed to login.</p>
                         </div>
-
                     {% else %}
+                        {% if not rejected %}
+                        <!-- Only show waiting spinner if NOT rejected -->
                         <div class="w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
                         <div>
                             <p class="font-semibold text-green-700 text-lg">Waiting for Registrar Approval…</p>
                             <p class="text-gray-600 text-sm">Please check back later.</p>
                         </div>
+                        {% endif %}
                     {% endif %}
                 </div>
 
@@ -41,20 +43,41 @@
                 <!-- Description -->
                 <p class="text-gray-600 mb-6">
                     Hello <strong>{{ student.first_name }} {{ student.last_name }}</strong>, thank you for registering!
-                    Your account is currently being reviewed by the Registrar's Office.
+                    {% if not rejected %}
+                        Your account is currently being reviewed by the Registrar's Office.
+                    {% else %}
+                        Your account was reviewed and rejected by the Registrar.
+                    {% endif %}
                 </p>
 
-                <!-- Approval MEssage as well as Login Button -->
+                <!-- Approval / Rejection Message -->
                 <div class="mb-8 text-center">
                     {% if profile.is_approved_by_registrar %}
                         <p class="text-green-600 font-semibold text-lg mb-3">
                             Your account has been approved!
                         </p>
-
                         <a href="{% url 'core:login' %}"
                            class="inline-block bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow">
                             Proceed to Login
                         </a>
+
+                    {% elif rejected %}
+                        <p class="text-red-600 font-semibold text-lg mb-3">
+                            Your registration was rejected.
+                        </p>
+                        <p class="text-gray-700 mb-3">{{ reject_message }}</p>
+
+                        <!-- Acknowledge & Clear Account Form -->
+                        <form method="post" action="{% url 'core:accept_rejection' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="student_id" value="{{ profile.id }}">
+                            <button type="submit"
+                                    class="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl shadow">
+                                Acknowledge & Clear Account
+                            </button>
+                        </form>
+
+
 
                     {% else %}
                         <p class="text-yellow-600 font-semibold text-lg">
@@ -64,9 +87,8 @@
                     {% endif %}
                 </div>
 
-                <!-- Show the Submitted Information -->
+                <!-- Submitted Information -->
                 <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm">
-
                     <h3 class="font-bold text-gray-800 mb-4 text-lg">Submitted Information</h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -89,6 +111,7 @@
                 </div>
 
                 <!-- REFRESH BUTTON -->
+                {% if not rejected %}
                 <div class="text-center mt-8">
                     <button onclick="location.reload()"
                             class="bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow flex items-center space-x-2 mx-auto">
@@ -99,6 +122,7 @@
                         </svg>
                     </button>
                 </div>
+                {% endif %}
 
             </div>
         </div>

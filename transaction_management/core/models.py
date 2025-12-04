@@ -30,6 +30,8 @@ class Profile(models.Model):
     #uploading document: COR or student ID
     document = models.FileField(upload_to=upload_documents, null=True, blank=True) #allows the users to send their documents
     submitted_at = models.DateTimeField(null=True, blank=True) #create a time frame
+    is_rejected = models.BooleanField(default=False) # checks the student account whether rejected or not 'False as Default'
+    rejection_reason = models.TextField(null=True, blank=True) # This allows to display the rejection reason of the student
 
     # function that will search base on the username and student number
     def __str__(self):

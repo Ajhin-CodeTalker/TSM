@@ -15,7 +15,6 @@ from django.db import IntegrityError
 from .forms import AppointmentForms
 from django.contrib import messages
 from .models import Appointment, Profile
-from django.utils import timezone
 from datetime import date, datetime
 from .forms import CertificateRequestForm
 from .models import CertificateRequest
@@ -23,15 +22,18 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegistrarRegistrationForm
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-from django.contrib.auth import logout
 from django.views.decorators.cache import never_cache
 from .models import AdminProfile
 from .forms import AdminRegistrationForm
 from .utils import get_user_role
 from .models import RegistrarProfile
-from django.contrib.auth import logout
 from django.core.paginator import Paginator
 from .utils import header_context
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.http import require_POST
 
 @never_cache
 @login_required
@@ -127,26 +129,51 @@ def register(request):
 
 @never_cache
 def waiting_for_approval(request):
-    # NEW: if logged in & pending, use persistent page
+    """
+    Redirects logged-in pending students to their waiting page.
+    Guests or non-pending users are sent to login.
+    """
     if request.user.is_authenticated:
         user = request.user
-        if hasattr(user, "profile") and not user.profile.is_approved_by_registrar:
+        profile = getattr(user, "profile", None)
+        if profile and not profile.is_approved_by_registrar:
             return redirect("core:waiting_status", user_id=user.id)
 
     messages.info(request, "Please log in to view your approval status.")
     return redirect("core:login")
 
 
-
 def waiting_status(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    profile = get_object_or_404(Profile, user=user)
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        messages.error(request, "This account does not exist or was rejected.")
+        return redirect("core:login")
 
-    context = {
+    profile = getattr(user, "profile", None)
+    if not profile:
+        messages.error(request, "Profile not found.")
+        return redirect("core:login")
+
+    # If rejected → show rejection message
+    if hasattr(profile, "is_rejected") and profile.is_rejected:
+        return render(request, "core/waiting_status.html", {
+            "student": user,
+            "profile": profile,
+            "rejected": True,
+            "reject_message": profile.rejection_reason,
+        })
+
+    # If approved → redirect to dashboard
+    if profile.is_approved_by_registrar:
+        return redirect("core:student_dashboard")
+
+    # Pending → show normal waiting page
+    return render(request, "core/waiting_status.html", {
         "student": user,
         "profile": profile,
-    }
-    return render(request, "core/waiting_status.html", context)
+    })
+
+
 # THIS IS THE VIEW FOR THE DASHBOARD/LOGIN MENU
 def login_view(request):
     if request.method == "POST":
@@ -262,26 +289,69 @@ def approve_profile(request, profile_id):
     messages.success(request, f"Approved {profile.user.get_full_name() or profile.user.username}")
     return redirect("core:approval_list")
 
-@user_passes_test(staff_check)
+
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
 def reject_profile(request, profile_id):
+    """
+    Registrar rejects a student's account.
+    Stores rejection reason and redirects registrar back to approval_list.
+    Student will see message in waiting_status.html.
+    """
     profile = get_object_or_404(Profile, id=profile_id)
-
-    # option for deactivating user or deleting user's account
-    # can be implemented if the user already graduated/transfers
     user = profile.user
-    user.is_active = False
-    user.save()
-    profile.is_approved_by_registrar = False
-    profile.save()
-    send_mail(
-        "Account Rejected",
-        f"Hello {profile.user.username}, your account registration has been rejected by the Registrar.",
-        settings.DEFAULT_FROM_EMAIL,
-        [profile.user.email],
-        fail_silently=True,
-    )
-    return redirect("core:approval_list")
 
+    if request.method == "POST":
+        reason = request.POST.get("reason", "Your account has been rejected.")
+
+        # Save rejection state instead of deleting profile/user
+        profile.is_rejected = True
+        profile.rejection_reason = reason
+        profile.is_approved_by_registrar = False
+        profile.save()
+
+        # Keep the user inactive so they cannot log in
+        user.is_active = False
+        user.save()
+
+        messages.error(request, f"Rejected {user.get_full_name()} — reason saved.")
+        return redirect("core:approval_list")
+
+    return render(request, "core/reject_reason_form.html", {"profile": profile})
+
+
+# Delete only after they see the message
+
+@require_POST
+def accept_rejection(request):
+    """
+    Deletes a rejected student's profile and user account when they acknowledge the rejection.
+    """
+    student_id = request.POST.get("student_id")  # we pass this hidden input from the form
+    profile = get_object_or_404(Profile, id=student_id)
+    user = profile.user
+
+    # Delete profile and user from DB
+    profile.delete()
+    user.delete()
+
+    messages.success(request, "Your rejected account has been removed.")
+    return redirect("core:register")  # redirect to registration page
+
+# This si the view for showing the student their account is reject
+def account_rejected(request, token):
+    """
+    Shows the rejection message to the student.
+    """
+    # Clear all leftover messages for the current session
+    list(messages.get_messages(request))
+    try:
+        reject_message = force_str(urlsafe_base64_decode(token))
+    except Exception:
+        reject_message = "Your account has been rejected. You can try to register again."
+
+    return render(request, "core/account_rejected.html", {
+        "reject_message": reject_message
+    })
 
 # helping the function to check if the user is staff
 def is_registrar(user):

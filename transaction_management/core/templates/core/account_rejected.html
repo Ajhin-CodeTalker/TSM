@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-top:50px; text-align:center;">
+    <h2>Account Rejected</h2>
+    <p>{{ rejection_message }}</p>
+    <a href="{% url 'core:register' %}">Register again</a>
+</div>
+{% endblock %}

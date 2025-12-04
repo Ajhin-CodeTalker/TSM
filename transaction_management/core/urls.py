@@ -46,5 +46,14 @@ urlpatterns = [
     path('student/dashboard/', views.student_dashboard, name="student_dashboard"),
 
     path("waiting/<int:user_id>/", views.waiting_status, name="waiting_status"),
+    path("waiting-status/<int:profile_id>/", views.waiting_status, name="waiting_status"),
+
+
+    #Rejected FRAME FOR STUDENT
+    path("account-rejected/", views.account_rejected, name="account_rejected"),
+    # urls.py
+    path('account-rejected/<str:token>/', views.account_rejected, name='account_rejected'),
+    path('accept-rejection/', views.accept_rejection, name='accept_rejection'),
+
 
 ]
