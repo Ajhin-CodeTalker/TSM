@@ -34,7 +34,7 @@ from django.utils.encoding import force_bytes
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_POST
-
+from django.db.models import Case, When, Value, IntegerField
 @never_cache
 @login_required
 def student_dashboard(request):
@@ -447,7 +447,15 @@ def student_appointments(request):
 @never_cache
 # @user_passes_test(is_registrar)
 def registrar_appointments(request):
-    appointments = Appointment.objects.all().order_by("-appointment_date")
+    appointments = Appointment.objects.annotate(
+    status_order=Case(
+        When(status='Pending', then=Value(0)),   # Pending first
+        When(status='Approved', then=Value(1)),
+        When(status='Declined', then=Value(2)),
+        default=Value(3),
+        output_field=IntegerField(),
+    )
+).order_by('status_order', 'appointment_date', 'appointment_time')
 
     # Pagination: Show only 5 appointments per page
     paginator = Paginator(appointments, 5)  # 5 appointments per page
@@ -561,7 +569,16 @@ def registrar_dashboard(request):
 # REGISTRAR: Allows to view ll certificate request
 def registrar_certificates(request):
     # Fetch all certificate requests, sorted by requested_at
-    certificates = CertificateRequest.objects.all().order_by("-requested_at")
+    certificates = CertificateRequest.objects.annotate(
+    status_order=Case(
+        When(status='Pending', then=Value(0)),
+        When(status='Approved', then=Value(1)),
+        When(status='Declined', then=Value(2)),
+        default=Value(3),
+        output_field=IntegerField(),
+    )
+).order_by('status_order', '-requested_at')
+
 
     # Pagination: Show only 5 requests at a time
     paginator = Paginator(certificates, 5)  # 5 certificates per page
