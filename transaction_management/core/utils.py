@@ -1,4 +1,6 @@
 from .models import AdminProfile, RegistrarProfile, Profile
+from django.shortcuts import redirect
+
 
 def get_user_role(user):
     """
@@ -36,3 +38,16 @@ def header_context(request):
         "role": role,
         "initials": initials,
     }
+
+
+
+def pending_student_redirect(get_response):
+    def middleware(request):
+        if request.user.is_authenticated:
+            profile = getattr(request.user, "profile", None)
+            if profile and not profile.is_approved_by_registrar:
+                # Allow only the waiting page
+                if request.path != "/waiting-status/":
+                    return redirect("core:waiting_for_approval")
+        return get_response(request)
+    return middleware

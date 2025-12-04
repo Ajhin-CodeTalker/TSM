@@ -127,29 +127,15 @@ def register(request):
 
 @never_cache
 def waiting_for_approval(request):
-    user = request.user if request.user.is_authenticated else None
-    profile = None
-    account_status = "Please log in with the credentials you used to register"
+    # NEW: if logged in & pending, use persistent page
+    if request.user.is_authenticated:
+        user = request.user
+        if hasattr(user, "profile") and not user.profile.is_approved_by_registrar:
+            return redirect("core:waiting_status", user_id=user.id)
 
-    if user:
-        try:
-            profile = Profile.objects.get(user=user)
-            if profile.is_verified_email and not profile.is_approved_by_registrar:
-                account_status = "Your email is verified! Waiting for registrar approval."
-            elif not profile.is_verified_email:
-                account_status = "Please verify your email to continue."
-            elif profile.is_approved_by_registrar:
-                return redirect("core:student_dashboard")  # already approved
-        except Profile.DoesNotExist:
-            profile = None
-    else:
-        # For anonymous visitors, show the approval page as a notification
-        account_status = "Your account is pending approval. Please log in with the credentials you used to register."
+    messages.info(request, "Please log in to view your approval status.")
+    return redirect("core:login")
 
-    return render(request, "core/waiting_status.html", {
-        "profile": profile,
-        "account_status": account_status,
-    })
 
 
 def waiting_status(request, user_id):
@@ -178,12 +164,15 @@ def login_view(request):
         try:
             user = User.objects.get(username=username)
             # Allow pending students to login temporarily
+            # Custom authentication for inactive students
             if not user.is_active and hasattr(user, 'profile') and not user.profile.is_approved_by_registrar:
-                # Check password manually
                 if user.check_password(password):
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
                     login(request, user)
-                    return redirect("core:waiting_for_approval")
+                    # ★ NEW: Redirect using user_id so the page still works after session ends
+                    return redirect("core:waiting_status", user_id=user.id)
+
+
                 else:
                     messages.error(request, "Invalid credentials.")
                     return redirect("core:login")
