@@ -163,9 +163,13 @@ def waiting_status(request, user_id):
             "reject_message": profile.rejection_reason,
         })
 
-    # If approved → redirect to dashboard
+    # If approved → show approved message in waiting_status.html
     if profile.is_approved_by_registrar:
-        return redirect("core:student_dashboard")
+        return render(request, "core/waiting_status.html", {
+            "student": user,
+            "profile": profile,
+            "approved": True,
+        })
 
     # Pending → show normal waiting page
     return render(request, "core/waiting_status.html", {

@@ -77,9 +77,21 @@
                             </button>
                         </form>
 
-
-
                     {% else %}
+
+                        <!-- ✅ ADDED APPROVE FORM (ONLY CHANGE YOU REQUESTED) -->
+                        {% if request.user.is_staff %}
+                            <form method="post" action="{% url 'core:approve_profile' profile.id %}" class="mb-4">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="inline-block bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-xl shadow">
+                                    Approve Account
+                                </button>
+                            </form>
+                            {% endif %}
+
+                        <!-- END OF ADDED CODE -->
+
                         <p class="text-yellow-600 font-semibold text-lg">
                             Waiting for Registrar Approval…
                         </p>
