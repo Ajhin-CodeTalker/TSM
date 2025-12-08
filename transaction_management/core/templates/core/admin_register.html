@@ -132,15 +132,12 @@
           {% endif %}
         </div>
 
-          <div class="form-group">
+        <div class="form-group">
           <label>Username</label>
           {{ form.username }}
-
-          <!-- Username hint -->
           <div style="font-size: 12px; color: #ff0000; margin-top: 4px;">
             Make sure there are no spaces in your username.
           </div>
-
           {% if form.username.errors %}
             <div class="field-error">{{ form.username.errors.0 }}</div>
           {% endif %}
@@ -159,11 +156,9 @@
           <label>Password</label>
           {{ form.password }}
           <span class="toggle-pass" onclick="togglePass('id_password')">👁️</span>
-
           <div class="strength-meter">
             <div id="strength-bar" class="strength-level"></div>
           </div>
-
           {% if form.password.errors %}
             <div class="field-error">{{ form.password.errors.0 }}</div>
           {% endif %}
@@ -199,7 +194,7 @@
   <div id="popupModal" class="popup-modal">
     <div id="popupContent" class="popup-content">
       <p id="popupMessage" class="popup-message"></p>
-      <button onclick="closePopup()" class="popup-btn">OK</button>
+      <button id="popupBtn" onclick="closePopup()" class="popup-btn">OK</button>
     </div>
   </div>
 
@@ -265,6 +260,15 @@ function togglePass(id) {
 {% if form.errors %}
 <script>
   showPopup("{{ form.errors.as_text|escapejs }}", "error");
+</script>
+{% endif %}
+
+{% if success %}
+<script>
+  showPopup("Admin account successfully created!", "success");
+  document.getElementById("popupBtn").onclick = function () {
+    window.location.href = "{% url 'core:login' %}";
+  }
 </script>
 {% endif %}
 

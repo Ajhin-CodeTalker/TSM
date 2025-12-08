@@ -35,6 +35,8 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.db.models import Case, When, Value, IntegerField
+
+
 @never_cache
 @login_required
 def student_dashboard(request):
@@ -235,6 +237,7 @@ def login_view(request):
 
 # LOGOUT FRAME
 def logout_view(request):
+    list(messages.get_messages(request))  # clears any pending messages
     logout(request)
     return redirect("core:login")
 
@@ -462,9 +465,8 @@ def registrar_appointments(request):
     page_number = request.GET.get('page')  # Get the page number from the query params
     page_obj = paginator.get_page(page_number)  # Get the current page object
 
-    context = {
-        'appointments': page_obj,  # Pass the paginated appointments
-    }
+    context = header_context(request)  # This gives profile, initials, role
+    context['appointments'] = page_obj
 
     return render(request, "core/registrar_appointments.html", context)
 
@@ -641,30 +643,31 @@ def admin_register(request):
     if request.method == "POST":
         form = AdminRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            
-
-
-            """
+            # Save user WITHOUT committing to DB yet
             user = form.save(commit=False)
-            # Hash the password
-            user.set_password(form.cleaned_data["password"])
-            
-            # Make the user an admin
+
+            # Set admin privileges
             user.is_staff = True
             user.is_superuser = True
-            
+
+            # Hash the password
+            user.set_password(form.cleaned_data["password"])
             user.save()
 
-            # create admin profile if you are using AdminProfile
+            # Optional admin profile
             AdminProfile.objects.create(user=user)
-            """
-            messages.success(request, "Admin account created successfully! Please login.")
-            return redirect("core:login")
+
+            # Render template with success context
+            return render(request, "core/admin_register.html", {
+                "form": AdminRegistrationForm(),  # empty form
+                "success": "Admin account created successfully! Please login."
+            })
+        
     else:
         form = AdminRegistrationForm()
 
     return render(request, "core/admin_register.html", {"form": form})
+
 
 
 def is_admin(user):
@@ -679,6 +682,7 @@ def is_registrar(user):
 # This is for REGISTRAR REGISTER
 def registrar_register(request):
     """Registrar REGISTRATION"""
+    
     # Force logout if any user is logged in
     if request.user.is_authenticated:
         logout(request)
@@ -692,18 +696,22 @@ def registrar_register(request):
             # Create registrar profile
             RegistrarProfile.objects.create(user=user, role="Registrar")
 
-            # Show success message and redirect
+            # Success message — shown on the same page
             messages.success(
                 request,
                 "Registrar account created successfully. Please proceed to login."
             )
-            return redirect("core:login")
+
+            # Render the same page so popup appears
+            return render(request, "core/registrar_register.html", {
+                "form": RegistrarRegistrationForm()  # empty form
+            })
+
         else:
-            # Collect all form errors into a single string
-            error_text = " ".join(
-                [f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()]
-            )
-            messages.error(request, f"Error creating account: {error_text}")
+            # Form invalid — show errors in popups
+            messages.error(request, "Please correct the errors in the form below.")
+            return render(request, "core/registrar_register.html", {"form": form})
+
     else:
         form = RegistrarRegistrationForm()
 
