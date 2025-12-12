@@ -35,7 +35,7 @@ from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.db.models import Case, When, Value, IntegerField
-
+from .utils import log_action
 
 @never_cache
 @login_required
@@ -284,6 +284,14 @@ def approve_profile(request, profile_id):
     user.is_active = True
     user.save()
 
+    # Save log activity
+    log_action(
+        admin_user=request.user,
+        student_profile=profile,
+        action_type="APPROVE",
+        message=f"Approved student Account ({profile.user.get_full_name})"
+    )
+
     # send notification
     send_mail(
         "Account Approved",
@@ -319,6 +327,14 @@ def reject_profile(request, profile_id):
         # Keep the user inactive so they cannot log in
         user.is_active = False
         user.save()
+
+         # save action log
+        log_action(
+            admin_user=request.user,
+            student_profile=profile,
+            action_type="REJECT",
+            message=f"Rejected student account ({profile.user.get_full_name()}). Reason: {reason}"
+        )
 
         messages.error(request, f"Rejected {user.get_full_name()} — reason saved.")
         return redirect("core:approval_list")
@@ -485,6 +501,15 @@ def update_appointment_status(request, appointment_id, status):
 
     appointment.save()
 
+    # Save log
+    log_action(
+        admin_user=request.user,
+        student_profile=appointment.student.profile,
+        action_type=status.upper(),
+        message=f"{status} appointment request for {appointment.student.username} "
+                f"on {appointment.appointment_date} at {appointment.appointment_time}."
+    )
+
     return redirect("core:registrar_appointments")
 
 
@@ -499,6 +524,14 @@ def update_certificate_status(request, cert_id, status):
     cert.approved_by = request.user
 
     cert.save()
+
+    # Save log
+    log_action(
+        admin_user=request.user,
+        student_profile=cert.student.profile,
+        action_type=status.upper(),
+        message=f"{status} certificate request ({cert.certificate_type}) for {cert.student.username}."
+    )
 
     messages.success(request, f"Certificate Request {status.lower()} successfully")
     return redirect("core:registrar_certificates")
@@ -724,3 +757,37 @@ def dashboard(request):
     return render(request, "core/dashboard.html", {
         "user_role": role,
     })
+
+
+def approve_user(request, user_id):
+    profile = Profile.objects.get(user_id=user_id)
+    profile.is_approved_by_registrar = True
+    profile.save()
+
+    # Save log
+    log_action(
+        admin_user=request.user, 
+        student_profile=profile,
+        action_type="APPROVE",
+        message=f"Approved the account of {profile.user.get_full_name()}."
+    )
+
+    messages.success(request, "User approved successfully.")
+    return redirect("registrar_dashboard")
+
+
+def reject_user(request, user_id):
+    profile = Profile.objects.get(user_id=user_id)
+    profile.is_approved_by_registrar = False
+    profile.save()
+
+    # Save log
+    log_action(
+        admin_user=request.user, 
+        student_profile=profile,
+        action_type="REJECT",
+        message=f"Rejected the account of {profile.user.get_full_name()}."
+    )
+
+    messages.error(request, "User rejected.")
+    return redirect("registrar_dashboard")

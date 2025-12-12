@@ -138,3 +138,22 @@ class StaffProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
+    
+
+class ActionLog(models.Model):
+    ACTION_TYPES = [
+        ("APPROVE", "Approved Profile"),
+        ("REJECT", "Rejected Profile"),
+        ("UPDATE", "Updated Profile"),
+        ("APPOINTMENT", "Processed Appointment"),
+        ("CERTIFICATE", "Processed Certificate Request"),
+    ]
+
+    admin_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="action_logs")
+    student_profile = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, related_name="logs")
+    action_type = models.CharField(max_length=50, choices=ACTION_TYPES)
+    message = models.TextField()
+    performed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.admin_user} - {self.action_type} - {self.performed_at}"

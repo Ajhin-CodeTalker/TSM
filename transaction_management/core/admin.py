@@ -1,7 +1,7 @@
 # this is the adminstration 
 
 from django.contrib import admin
-from .models import Profile, OTP, Appointment, CertificateRequest
+from .models import Profile, OTP, Appointment, CertificateRequest, ActionLog
 
 
 @admin.register(Profile)
@@ -35,3 +35,10 @@ class AppointmentAdmin(admin.ModelAdmin):
 class CertificateRequestAdmin(admin.ModelAdmin):
     list_display = ('student', 'certificate_type', 'status', 'requested_at')
     list_filter = ('certificate_type', 'status')
+
+
+@admin.register(ActionLog)
+class ActionLogAdmin(admin.ModelAdmin):
+    list_display = ("admin_user", "student_profile", "action_type", "performed_at")
+    search_fields = ("admin_user__username", "student_profile__student_number")
+    list_filter = ("action_type", "performed_at")

@@ -1,6 +1,6 @@
 from .models import AdminProfile, RegistrarProfile, Profile
 from django.shortcuts import redirect
-
+from .models import ActionLog
 def get_user_role(user):
     if hasattr(user, 'registrarprofile') and user.registrarprofile is not None:
         return user.registrarprofile.role
@@ -43,3 +43,11 @@ def pending_student_redirect(get_response):
                     return redirect("core:waiting_for_approval")
         return get_response(request)
     return middleware
+
+def log_action(admin_user, student_profile, action_type, message):
+    ActionLog.objects.create(
+        admin_user=admin_user,
+        student_profile=student_profile,
+        action_type=action_type,
+        message=message
+    )
