@@ -39,6 +39,6 @@ class CertificateRequestAdmin(admin.ModelAdmin):
 
 @admin.register(ActionLog)
 class ActionLogAdmin(admin.ModelAdmin):
-    list_display = ("admin_user", "student_profile", "action_type", "performed_at")
-    search_fields = ("admin_user__username", "student_profile__student_number")
+    list_display = ("admin_user", "student_profile", "appointment", "certificate" , "action_type", "performed_at")
+    search_fields = ("admin_user__username", "student_profile__student_number", "appointment__student__username", "certificate__student__username")
     list_filter = ("action_type", "performed_at")

@@ -155,5 +155,8 @@ class ActionLog(models.Model):
     message = models.TextField()
     performed_at = models.DateTimeField(auto_now_add=True)
 
+
+    appointment = models.ForeignKey('Appointment', on_delete=models.SET_NULL, null=True, blank=True, related_name='action_logs')
+    certificate = models.ForeignKey('CertificateRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='action_logs')
     def __str__(self):
         return f"{self.admin_user} - {self.action_type} - {self.performed_at}"

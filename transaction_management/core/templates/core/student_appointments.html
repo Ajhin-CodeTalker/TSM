@@ -139,8 +139,11 @@
 
       <div class="form-group">
         <label>Date</label>
-        {{ form.appointment_date }}
-      </div>
+        <input type="date" 
+       name="appointment_date" 
+       min="{{ today|date:'Y-m-d' }}" 
+       required>
+      </div>  
 
       <div class="form-group">
         <label>Time</label>

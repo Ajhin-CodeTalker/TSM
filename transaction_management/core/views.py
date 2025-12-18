@@ -36,7 +36,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.db.models import Case, When, Value, IntegerField
 from .utils import log_action
-
+from .models import ActionLog
 @never_cache
 @login_required
 def student_dashboard(request):
@@ -423,6 +423,11 @@ def student_appointments(request):
             appointment_date = form.cleaned_data['appointment_date']
             appointment_time = form.cleaned_data['appointment_time']
 
+            # Blocks any past dates to appear
+            if appointment_date < date.today():
+                messages.error(request, "You cannot book an appointment in the past. Cause 'Past' is 'Past' for a reason")
+                return redirect('core:student_appointments')
+
             # Prevent same student from double-booking
             if Appointment.objects.filter(
                 student=user,
@@ -460,6 +465,7 @@ def student_appointments(request):
         'appointments': appointments,
         'available_times': available_times,
         'booked_times': booked_times,
+        'today': date.today(),
     })
 
 
@@ -486,6 +492,17 @@ def registrar_appointments(request):
 
     return render(request, "core/registrar_appointments.html", context)
 
+def appointment_detail(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Get all actions for this appointment
+    logs = ActionLog.objects.filter(appointment=appointment).order_by('-performed_at')
+    
+    context = {
+        'appointment': appointment,
+        'logs': logs
+    }
+    return render(request, 'core/appointment_detail.html', context)
 
 # Checks the admin user and display in the Dashboard of the student
 def update_appointment_status(request, appointment_id, status):
@@ -505,6 +522,7 @@ def update_appointment_status(request, appointment_id, status):
     log_action(
         admin_user=request.user,
         student_profile=appointment.student.profile,
+        appointment=appointment,
         action_type=status.upper(),
         message=f"{status} appointment request for {appointment.student.username} "
                 f"on {appointment.appointment_date} at {appointment.appointment_time}."
@@ -513,7 +531,17 @@ def update_appointment_status(request, appointment_id, status):
     return redirect("core:registrar_appointments")
 
 
-
+def certificate_detail(request, cert_id):
+    cert = get_object_or_404(CertificateRequest, id=cert_id)
+    
+    # Get all actions for this certificate
+    logs = ActionLog.objects.filter(certificate=cert).order_by('-performed_at')
+    
+    context = {
+        'certificate': cert,
+        'logs': logs
+    }
+    return render(request, 'core/certificate_detail.html', context)
 
 # @user_passes_test(is_registrar)
 def update_certificate_status(request, cert_id, status):
@@ -529,6 +557,7 @@ def update_certificate_status(request, cert_id, status):
     log_action(
         admin_user=request.user,
         student_profile=cert.student.profile,
+        certificate=cert,
         action_type=status.upper(),
         message=f"{status} certificate request ({cert.certificate_type}) for {cert.student.username}."
     )

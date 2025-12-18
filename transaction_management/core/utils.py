@@ -44,10 +44,12 @@ def pending_student_redirect(get_response):
         return get_response(request)
     return middleware
 
-def log_action(admin_user, student_profile, action_type, message):
+def log_action(admin_user, student_profile=None, action_type=None, message="", appointment=None, certificate=None):
     ActionLog.objects.create(
         admin_user=admin_user,
         student_profile=student_profile,
+        appointment=appointment,
+        certificate=certificate,
         action_type=action_type,
         message=message
     )
