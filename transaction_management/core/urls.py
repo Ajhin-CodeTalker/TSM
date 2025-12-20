@@ -54,6 +54,6 @@ urlpatterns = [
     # urls.py
     path('account-rejected/<str:token>/', views.account_rejected, name='account_rejected'),
     path('accept-rejection/', views.accept_rejection, name='accept_rejection'),
-
+    path("registrar/appointments/bulk-update/", views.bulk_update_appointments, name="bulk_update_appointments"),
 
 ]

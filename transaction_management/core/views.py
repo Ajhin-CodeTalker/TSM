@@ -507,7 +507,11 @@ def appointment_detail(request, appointment_id):
 # Checks the admin user and display in the Dashboard of the student
 def update_appointment_status(request, appointment_id, status):
     appointment = get_object_or_404(Appointment, id = appointment_id)
-    appointment.status = status # displays the user/registrar
+    if appointment.status != "Pending":
+        return redirect("core:registrar_appointments")
+
+    appointment.status = status
+    appointment.save()
 
     if status == "Approved":
         appointment.approved_by = request.user
@@ -820,3 +824,48 @@ def reject_user(request, user_id):
 
     messages.error(request, "User rejected.")
     return redirect("registrar_dashboard")
+
+
+
+
+# Bulking approval and rejection
+def bulk_update_appointments(request):
+    action = request.POST.get("action")
+    appointment_ids = request.POST.getlist("appointment_ids")
+
+    if not appointment_ids:
+        messages.error(request, "No appointments selected.")
+        return redirect("core:registrar_appointments")
+
+    if action not in ["approve", "decline"]:
+        messages.error(request, "Invalid bulk action.")
+        return redirect("core:registrar_appointments")
+
+    status = "Approved" if action == "approve" else "Declined"
+
+    appointments = Appointment.objects.filter(
+        id__in=appointment_ids,
+        status="Pending"
+    )
+
+    for appointment in appointments:
+        appointment.status = status
+        appointment.approved_by = request.user
+        appointment.save()
+
+        log_action(
+            admin_user=request.user,
+            student_profile=appointment.student.profile,
+            appointment=appointment,
+            action_type=status.upper(),
+            message=f"{status} appointment (bulk action) for "
+                    f"{appointment.student.username} on "
+                    f"{appointment.appointment_date} at {appointment.appointment_time}."
+        )
+
+    messages.success(
+        request,
+        f"{appointments.count()} appointment(s) {status.lower()} successfully."
+    )
+
+    return redirect("core:registrar_appointments")
