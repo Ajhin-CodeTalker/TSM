@@ -55,5 +55,6 @@ urlpatterns = [
     path('account-rejected/<str:token>/', views.account_rejected, name='account_rejected'),
     path('accept-rejection/', views.accept_rejection, name='accept_rejection'),
     path("registrar/appointments/bulk-update/", views.bulk_update_appointments, name="bulk_update_appointments"),
-
+    path("admin/live-students/", views.live_student_report, name="live_student_records"),
+    path('export-students/', views.export_students, name='export_students'),
 ]

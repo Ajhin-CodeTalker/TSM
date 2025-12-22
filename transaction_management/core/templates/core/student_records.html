@@ -1,0 +1,77 @@
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-semibold text-gray-800">Student Records</h2>
+    <a href="{% url 'core:export_students' %}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+       Export CSV
+    </a>
+</div>
+
+
+<script>
+let studentInterval = null;
+
+async function fetchStudents() {
+    try {
+        const response = await fetch("{% url 'core:live_student_records' %}");
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const tbody = document.getElementById("studentTableBody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        if (!data.students || data.students.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">
+                        No student records found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.students.forEach(student => {
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-2 border">${student.student_id}</td>
+                    <td class="px-4 py-2 border">${student.name}</td>
+                    <td class="px-4 py-2 border">${student.email}</td>
+                    <td class="px-4 py-2 border">
+                        <span class="px-2 py-1 rounded text-xs font-semibold
+                            ${student.status === "Approved"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"}">
+                            ${student.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2 border">${student.created_at}</td>
+                </tr>
+            `);
+        });
+
+    } catch (error) {
+        console.error("Student fetch failed:", error);
+    }
+}
+
+/* Start polling ONLY when Student Records tab is opened */
+document.getElementById("tab-students")?.addEventListener("click", () => {
+    fetchStudents();
+
+    if (!studentInterval) {
+        studentInterval = setInterval(fetchStudents, 5000);
+    }
+});
+
+/* Stop polling when switching tabs */
+document.querySelectorAll(".nav-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        if (tab.id !== "tab-students" && studentInterval) {
+            clearInterval(studentInterval);
+            studentInterval = null;
+        }
+    });
+});
+</script>

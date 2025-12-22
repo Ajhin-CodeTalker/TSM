@@ -37,6 +37,8 @@ from django.views.decorators.http import require_POST
 from django.db.models import Case, When, Value, IntegerField
 from .utils import log_action
 from .models import ActionLog
+
+from django.http import JsonResponse
 @never_cache
 @login_required
 def student_dashboard(request):
@@ -618,12 +620,42 @@ def registrar_dashboard(request):
 
     recent_activity = sorted(recent_activity, key=lambda x: x["time"], reverse=True)[:5]
 
+    # Live student records (ADMIN ONLY)
+    # ===============================
+    # Live student records (Admin / Registrar)
+    # ===============================
+    students = None
+
+    if user.is_staff or user.is_superuser:
+        sort = request.GET.get("sort", "student_number")
+        order = request.GET.get("order", "asc")
+
+        allowed_sorts = {
+            "student_number": "student_number",
+            "name": "user__last_name",
+            "course": "course",
+            "year": "year_level",
+            "status": "is_approved_by_registrar",
+            "date": "submitted_at",
+        }
+
+        sort_field = allowed_sorts.get(sort, "student_number")
+        if order == "desc":
+            sort_field = f"-{sort_field}"
+
+        student_qs = Profile.objects.select_related("user").order_by(sort_field)
+
+        paginator = Paginator(student_qs, 10)  # 10 students per page
+        page_number = request.GET.get("page")
+        students = paginator.get_page(page_number)
+
     context = {
         "pending_profiles": pending_profiles,
         "processing_appointments": processing_appointments,
         "completed_today": completed_today,
         "total_this_month": total_this_month,
         "recent_activity": recent_activity,
+        "students": students,
 
         # Added so header displays correctly
         "profile": profile,
@@ -869,3 +901,52 @@ def bulk_update_appointments(request):
     )
 
     return redirect("core:registrar_appointments")
+
+
+
+# Show Student Record
+@login_required
+def live_student_report(request):
+    if not request.user.is_superuser:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    students = Profile.objects.select_related("user").order_by("-submitted_at")
+
+    data = []
+    for profile in students:
+        data.append({
+            "id": profile.id,
+            "name": f"{profile.user.first_name} {profile.user.last_name}",
+            "email": profile.user.email,
+            "student_id": profile.student_number,
+            "status": "Approved" if profile.is_approved_by_registrar else "Pending",
+            "created_at": profile.submitted_at.strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return JsonResponse({"students": data})
+
+
+
+
+# EXPORTING DATA/INFORMATION
+from django.http import HttpResponse
+import csv
+def export_students(request):
+    # Create the HttpResponse object with CSV header
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="students.csv"'},
+    )
+
+    writer = csv.writer(response)
+    # Write header row
+    writer.writerow(['Student Number', 'Last Name', 'First Name', 'Course', 'Year', 'Status', 'Submitted At'])
+
+    # Write student data
+    students = Profile.objects.all()  # you can filter if needed
+    for s in students:
+        status = 'Approved' if s.is_approved_by_registrar else 'Rejected' if s.is_rejected else 'Pending'
+        writer.writerow([s.student_number, s.user.last_name, s.user.first_name,
+                         s.course, s.year_level, status, s.submitted_at])
+
+    return response
