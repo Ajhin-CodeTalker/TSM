@@ -37,7 +37,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Case, When, Value, IntegerField
 from .utils import log_action
 from .models import ActionLog
-
+from django.db.models.functions import TruncDate, TruncMonth, TruncYear, TruncWeek
 from django.http import JsonResponse
 @never_cache
 @login_required
@@ -948,5 +948,315 @@ def export_students(request):
         status = 'Approved' if s.is_approved_by_registrar else 'Rejected' if s.is_rejected else 'Pending'
         writer.writerow([s.student_number, s.user.last_name, s.user.first_name,
                          s.course, s.year_level, status, s.submitted_at])
+
+    return response
+
+
+
+# REPORTS IMPORTs
+#THESE ARE THE REPORTS CATALOGUE
+from django.db.models import Count
+@login_required
+def export_request_summary(request):
+    if not request.user.is_superuser:
+        return HttpResponse(status=403)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="detailed_certificate_summary.csv"'
+
+    writer = csv.writer(response)
+
+    # 1️⃣ Overall Certificate Requests by Status
+    writer.writerow(["=== OVERALL APPOINTMENT STATUS ==="])
+    writer.writerow(["Status", "Total Requests"])
+
+    status_data = Appointment.objects.values("status").annotate(total=Count("id"))
+    for row in status_data:
+        writer.writerow([row["status"], row["total"]])
+    writer.writerow([])
+
+    #  Certificate Requests by Course and Year
+    writer.writerow(["=== CERTIFICATE REQUESTS BY COURSE & YEAR ==="])
+    writer.writerow(["Certificate Type", "Year Level", "Course", "Total Requests", "Total Students"])
+
+    certificate_data = (
+        CertificateRequest.objects
+        .values("certificate_type", "student__profile__year_level", "student__profile__course")
+        .annotate(
+            total_requests=Count("id"),
+            total_students=Count("student", distinct=True)
+        )
+        .order_by("certificate_type", "student__profile__year_level", "student__profile__course")
+    )
+
+    for row in certificate_data:
+        writer.writerow([
+            row["certificate_type"],
+            row["student__profile__year_level"],
+            row["student__profile__course"],
+            row["total_requests"],
+            row["total_students"]
+        ])
+    writer.writerow([])
+
+    
+    # Most Requested Certificates
+    writer.writerow(["=== MOST REQUESTED CERTIFICATES ==="])
+    writer.writerow(["Certificate Type", "Total Requests"])
+
+    most_requested = (
+        CertificateRequest.objects
+        .values("certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("-total_requests")
+    )
+
+    for row in most_requested:
+        writer.writerow([row["certificate_type"], row["total_requests"]])
+    writer.writerow([])
+
+    # Daily Certificate Requests
+    writer.writerow(["=== DAILY CERTIFICATE REQUESTS ==="])
+    writer.writerow(["Date", "Certificate Type", "Total Requests"])
+
+    daily_data = (
+        CertificateRequest.objects
+        .annotate(day=TruncDate("requested_at"))
+        .values("day", "certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("day", "certificate_type")
+    )
+
+    for row in daily_data:
+        writer.writerow([row["day"], row["certificate_type"], row["total_requests"]])
+    writer.writerow([])
+
+    # Weekly Certificate Requests
+    writer.writerow(["=== WEEKLY CERTIFICATE REQUESTS ==="])
+    writer.writerow(["Week Start", "Certificate Type", "Total Requests"])
+
+    weekly_data = (
+        CertificateRequest.objects
+        .annotate(week=TruncWeek("requested_at"))
+        .values("week", "certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("week", "certificate_type")
+    )
+
+    for row in weekly_data:
+        writer.writerow([row["week"], row["certificate_type"], row["total_requests"]])
+    writer.writerow([])
+
+    #  Monthly Certificate Requests
+    writer.writerow(["=== MONTHLY CERTIFICATE REQUESTS ==="])
+    writer.writerow(["Month", "Certificate Type", "Total Requests"])
+
+    monthly_data = (
+        CertificateRequest.objects
+        .annotate(month=TruncMonth("requested_at"))
+        .values("month", "certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("month", "certificate_type")
+    )
+
+    for row in monthly_data:
+        writer.writerow([row["month"], row["certificate_type"], row["total_requests"]])
+    writer.writerow([])
+
+    return response
+
+
+@login_required
+def export_certificate_issuance(request):
+    if not request.user.is_superuser:
+        return HttpResponse(status=403)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        'attachment; filename="issuance_and_appointments_records.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    # CERTIFICATE ISSUANCE RECORDS
+    writer.writerow(["=== CERTIFICATE ISSUANCE RECORDS ==="])
+    writer.writerow(["Student Username","Certificate Type","Status","Requested At","Approved By"])
+
+    certificates = CertificateRequest.objects.select_related(
+        "student",
+        "approved_by"
+    )
+
+    for c in certificates:
+        writer.writerow([c.student.username,c.certificate_type,c.status,c.requested_at,c.approved_by.username if c.approved_by else "-"])
+
+    # Blank line between sections
+    writer.writerow([])
+    writer.writerow([])
+
+    # APPOINTMENT RECORDS
+    writer.writerow(["=== APPOINTMENT RECORDS ==="])
+    writer.writerow(["Student Username","Appointment Date","Appointment Time","Status","Approved By"])
+
+    appointments = Appointment.objects.select_related(
+        "student",
+        "approved_by"
+    )
+
+    for a in appointments:writer.writerow([a.student.username,a.appointment_date,a.appointment_time,a.status,a.approved_by.username if a.approved_by else "-"])
+
+    return response
+
+
+
+
+
+@login_required
+def export_top_certificates(request):
+    if not request.user.is_superuser:
+        return HttpResponse("Unauthorized", status=403)
+    
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="certificate_statistics.csv"'
+
+    # DAILY SUMMARY
+    daily_data = (CertificateRequest.objects.annotate(day=TruncDate("requested_at")).values("day", "certificate_type").annotate(total_requests=Count("id")).order_by("day", "-total_requests"))
+
+    response.write("=== DAILY SUMMARY ===\n")
+    response.write("Date,Certificate Type,Total Requests\n")
+    for row in daily_data:
+        response.write(
+            f"{row['day']},{row['certificate_type']},{row['total_requests']}\n"
+        )
+
+    response.write("\n")
+
+    # MONTHLY SUMMARY
+    monthly_data = (
+        CertificateRequest.objects
+        .annotate(month=TruncMonth("requested_at"))
+        .values("month", "certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("month", "-total_requests")
+    )
+
+    response.write("=== MONTHLY SUMMARY ===\n")
+    response.write("Month,Certificate Type,Total Requests\n")
+    for row in monthly_data:
+        response.write(
+            f"{row['month']},{row['certificate_type']},{row['total_requests']}\n"
+        )
+
+    response.write("\n")
+
+    # YEARLY SUMMARY
+    
+    yearly_data = (
+        CertificateRequest.objects
+        .annotate(year=TruncYear("requested_at"))
+        .values("year", "certificate_type")
+        .annotate(total_requests=Count("id"))
+        .order_by("year", "-total_requests")
+    )
+
+    response.write("=== YEARLY SUMMARY ===\n")
+    response.write("Year,Certificate Type,Total Requests\n")
+    for row in yearly_data:
+        response.write(
+            f"{row['year']},{row['certificate_type']},{row['total_requests']}\n"
+        )
+
+    response.write("\n")
+
+    
+    # Course and Certificate breakdown
+    course_certificate_data = (
+        CertificateRequest.objects
+        .values(
+            "student__profile__course",
+            "certificate_type"
+        )
+        .annotate(
+            total_students=Count("student", distinct=True),
+            total_requests=Count("id")
+        )
+        .order_by("student__profile__course", "-total_requests")
+    )
+
+    response.write("=== COURSE BREAKDOWN ===\n")
+    response.write("Course,Certificate Type,Total Students,Total Requests\n")
+    for row in course_certificate_data:
+        response.write(
+            f"{row['student__profile__course']},"
+            f"{row['certificate_type']},"
+            f"{row['total_students']},"
+            f"{row['total_requests']}\n"
+        )
+
+    return response
+
+@login_required
+def export_processing_performance(request):
+    if not request.user.is_superuser:
+        return HttpResponse(status=403)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="processing_performance.csv"'
+
+    writer = csv.writer(response)
+
+    # Certificate Request
+    writer.writerow(["=== CERTIFICATE REQUESTS ==="])
+    writer.writerow(["Student", "Certificate Type", "Status", "Requested At", "Approved By"])
+
+    certificates = CertificateRequest.objects.select_related("student", "approved_by")
+    for c in certificates:
+        writer.writerow([
+            c.student.username,
+            c.certificate_type,
+            c.status,
+            c.requested_at.strftime("%Y-%m-%d %H:%M"),
+            c.approved_by.username if c.approved_by else "-"
+        ])
+
+    writer.writerow([])
+    writer.writerow([])
+
+    # Appointments
+    writer.writerow(["=== APPOINTMENTS ==="])
+    writer.writerow(["Student", "Appointment Date", "Appointment Time", "Status", "Approved By"])
+
+    appointments = Appointment.objects.select_related("student", "approved_by")
+    for a in appointments:
+        writer.writerow([
+            a.student.username,
+            a.appointment_date.strftime("%Y-%m-%d"),
+            a.appointment_time.strftime("%H:%M") if a.appointment_time else "-",
+            a.status,
+            a.approved_by.username if a.approved_by else "-"
+        ])
+
+    writer.writerow([])
+    writer.writerow([])
+
+    # Students accounts
+    writer.writerow(["=== STUDENT ACCOUNTS ==="])
+    writer.writerow(["Username", "Full Name", "Email", "Status", "Approved/Declined By", "Submitted At"])
+
+    profiles = Profile.objects.select_related("user").all().order_by("-submitted_at")
+    for p in profiles:
+        status = "Approved" if p.is_approved_by_registrar else "Rejected" if p.is_rejected else "Pending"
+        # Find admin/staff who approved/rejected
+        log = ActionLog.objects.filter(student_profile=p, action_type__in=["APPROVE", "REJECT"]).order_by("-performed_at").first()
+        admin_name = log.admin_user.username if log else "-"
+        
+        writer.writerow([
+            p.user.username,
+            f"{p.user.first_name} {p.user.last_name}".strip(),
+            p.user.email,
+            status,
+            admin_name,
+            p.submitted_at.strftime("%Y-%m-%d %H:%M")
+        ])
 
     return response

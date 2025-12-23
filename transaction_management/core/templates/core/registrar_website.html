@@ -194,16 +194,103 @@
         </div>
     </section>
 
-    <!-- REPORTS -->
-    <section id="reports-content" class="hidden fade-in">
-        <div class="bg-white p-6 rounded-xl shadow">
-            <h2 class="text-lg font-semibold mb-4">Reports & Analytics</h2>
-            <p class="text-sm text-gray-500">Generate summaries, performance metrics, and processing statistics.</p>
-        </div>
-    </section>
-    {% endif %}
-</div>
+            <!-- REPORTS -->
+<section id="reports-content" class="hidden fade-in">
+    <div class="bg-white p-6 rounded-xl shadow">
 
+        <h2 class="text-lg font-semibold mb-2">Reports & Analytics</h2>
+        <p class="text-sm text-gray-500 mb-6">
+            Generate downloadable reports for administrative review and decision-making.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Report: Student Request Summary -->
+            <div class="border rounded-lg p-5 hover:shadow transition">
+                <h3 class="font-semibold text-gray-800 mb-2">
+                    📄 Student Request Summary
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    Contains a summary of all student requests submitted within a selected
+                    time range. This includes the total number of requests, their current
+                    statuses (pending, approved, rejected), and request trends.
+                </p>
+
+                <div class="flex justify-end">
+                    <a href="{% url 'core:export_request_summary' %}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Export Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report: Certificate Issuance Records -->
+            <div class="border rounded-lg p-5 hover:shadow transition">
+                <h3 class="font-semibold text-gray-800 mb-2">
+                    📜 Certificate Issuance Records
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    Provides detailed records of issued certificates, including the type
+                    of certificate, number of times issued, and issuance dates. Useful for
+                    tracking document distribution.
+                </p>
+
+                <div class="flex justify-end">
+                    <a href="{% url 'core:export_certificate_issuance' %}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Export Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report: Most Requested Certificate Types -->
+            <div class="border rounded-lg p-5 hover:shadow transition">
+                <h3 class="font-semibold text-gray-800 mb-2">
+                    📊 Most Requested Certificate Types
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    Shows which certificate types are most frequently requested by students.
+                    This report helps identify high-demand documents for better processing
+                    and resource planning.
+                </p>
+
+                <div class="flex justify-end">
+                    <a href="{% url 'core:export_top_certificates' %}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Export Report
+                    </a>
+                </div>
+            </div>
+
+            <!-- Report: Registrar Processing Performance -->
+            <div class="border rounded-lg p-5 hover:shadow transition">
+                <h3 class="font-semibold text-gray-800 mb-2">
+                    ⏱ Registrar Processing Performance
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    Displays processing statistics such as average approval time,
+                    number of requests handled per day, and completion rates.
+                    Useful for internal performance evaluation.
+                </p>
+
+                <div class="flex justify-end">
+                    <a href="{% url 'core:export_processing_performance' %}"
+                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                        Export Report
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+         {% endif %}
 <script>
 function showTab(tab) {
     // hide all tab contents

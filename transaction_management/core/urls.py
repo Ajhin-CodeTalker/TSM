@@ -51,10 +51,17 @@ urlpatterns = [
 
     #Rejected FRAME FOR STUDENT
     path("account-rejected/", views.account_rejected, name="account_rejected"),
+
     # urls.py
     path('account-rejected/<str:token>/', views.account_rejected, name='account_rejected'),
     path('accept-rejection/', views.accept_rejection, name='accept_rejection'),
     path("registrar/appointments/bulk-update/", views.bulk_update_appointments, name="bulk_update_appointments"),
     path("admin/live-students/", views.live_student_report, name="live_student_records"),
+
+    # URLS FOR REPORTS
     path('export-students/', views.export_students, name='export_students'),
+     path("reports/requests-summary/", views.export_request_summary, name="export_request_summary"),
+    path("reports/certificates-issued/", views.export_certificate_issuance, name="export_certificate_issuance"),
+    path("reports/top-certificates/", views.export_top_certificates, name="export_top_certificates"),
+    path("reports/processing-performance/", views.export_processing_performance, name="export_processing_performance"),
 ]
