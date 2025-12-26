@@ -73,6 +73,16 @@ def student_dashboard(request):
         appointments = Appointment.objects.filter(student=user).order_by('-created_at')
         certificates = CertificateRequest.objects.filter(student=user).order_by('-requested_at')
 
+        # Paginate (5 per page)
+        app_paginator = Paginator(appointments, 5)
+        cert_paginator = Paginator(certificates, 5)
+
+        app_page_number = request.GET.get("app_page")
+        cert_page_number = request.GET.get("cert_page")
+
+        app_page_obj = app_paginator.get_page(app_page_number)
+        cert_page_obj = cert_paginator.get_page(cert_page_number)
+    
     else:
         # For anonymous visitors — no queries using user
         profile = None
@@ -85,6 +95,8 @@ def student_dashboard(request):
         "appointments": appointments,
         "certificates": certificates,
         "account_status": account_status,
+         "app_page_obj": app_page_obj,
+        "cert_page_obj": cert_page_obj,
     }
 
     return render(request, "core/student_dashboard.html", context)
