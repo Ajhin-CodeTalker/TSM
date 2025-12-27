@@ -1,0 +1,18 @@
+=== CERTIFICATE REQUESTS ===
+Student,Certificate Type,Status,Requested At,Approved By
+Agnes_Digital,enrollment,Released,2025-12-18 01:53,Hishi_Amazon
+Agnes_Digital,enrollment,Released,2025-12-18 01:53,Agnes_Tachyon
+
+
+=== APPOINTMENTS ===
+Student,Appointment Date,Appointment Time,Status,Approved By
+Agnes_Digital,2025-12-24,10:00,Declined,Agnes_Tachyon
+Agnes_Digital,2025-12-18,10:00,Declined,Agnes_Tachyon
+Agnes_Digital,2025-12-20,16:00,Approved,Agnes_Tachyon
+Agnes_Digital,2025-12-25,14:00,Approved,Agnes_Tachyon
+Agnes_Digital,2025-12-31,10:00,Approved,Agnes_Tachyon
+
+
+=== STUDENT ACCOUNTS ===
+Username,Full Name,Email,Status,Approved/Declined By,Submitted At
+Agnes_Digital,Agnes Digital,agnes@cvsu.edu.ph,Approved,Agnes_Tachyon,2025-12-18 01:52
