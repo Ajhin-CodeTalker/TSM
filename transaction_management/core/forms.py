@@ -99,8 +99,11 @@ class StudentRegistrationForm(forms.ModelForm):
         email = self.cleaned_data.get("email")
 
         # allow ANY valid email
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("This email is already registered")
+        if not email.lower().endswith("@cvsu.edu.ph"):
+            raise forms.ValidationError("Only CVSU institutional email is allowed!")
+
+        # if User.objects.filter(email=email).exists():
+        #     raise ValidationError("This email is already registered")
         
         return email
 
