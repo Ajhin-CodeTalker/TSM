@@ -90,6 +90,13 @@ class CertificateRequest(models.Model):
     certificate_type = models.CharField(max_length=50, choices=CERTIFICATE_CHOICES)
     purpose = models.TextField(blank=True, null=True)
     supporting_document = models.FileField(upload_to='certificates/', blank=True, null=True)
+
+    # NOTIFICATION
+    requested_at = models.DateTimeField(auto_now_add=True)   # when student submitted
+    pickup_date = models.DateField(null=True, blank=True)
+    pickup_time = models.TimeField(null=True, blank=True)
+    is_notified = models.BooleanField(default=False)
+    
     status = models.CharField(
         max_length=20,
         choices=[
@@ -100,7 +107,7 @@ class CertificateRequest(models.Model):
         ],
         default='Pending'
     )
-    requested_at = models.DateTimeField(default=timezone.now)
+
 
 
     # Field for showing who approved/reject 

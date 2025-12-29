@@ -90,14 +90,54 @@ def student_dashboard(request):
         certificates = []
         account_status = "Guest Access (Testing Mode)"
 
+    # Ensuring view triggers notifications
+    released_certs = CertificateRequest.objects.filter(
+        student=request.user,
+        status='Released',
+        is_notified=False
+    )
+
+    show_popup = False
+    if released_certs.exists():
+        show_popup = True
+        # mark notified so modal only shows once
+        released_certs.update(is_notified=True)
+
+
     context = {
         "profile": profile,
         "appointments": appointments,
         "certificates": certificates,
         "account_status": account_status,
-         "app_page_obj": app_page_obj,
+        "app_page_obj": app_page_obj,
         "cert_page_obj": cert_page_obj,
+        "messages": messages.get_messages(request),
+        "show_popup": show_popup,
+        "released_certs": released_certs,
     }
+    # --- Certificate Pickup Notification ---
+    if user:
+        now = timezone.localtime()
+
+        certs_to_notify = CertificateRequest.objects.filter(
+            student=user,
+            status="Released",
+            is_notified=False,
+            pickup_date__lte=now.date(),
+            pickup_time__lte=now.time(),
+        )
+
+        if certs_to_notify.exists():
+            show_popup = True
+
+            for c in certs_to_notify:
+                messages.success(
+                    request,
+                    f"📌 {c.get_certificate_type_display()} is ready! "
+                    f"Pickup on {c.pickup_date} at {c.pickup_time}."
+                )
+
+            certs_to_notify.update(is_notified=True)
 
     return render(request, "core/student_dashboard.html", context)
 
@@ -569,6 +609,12 @@ def update_certificate_status(request, cert_id, status):
     # storing who performed the action
     cert.approved_by = request.user
 
+
+    # Only capture pickup info on release
+    if status == "Released":
+        cert.pickup_date = request.POST.get("pickup_date")
+        cert.pickup_time = request.POST.get("pickup_time")
+        cert.is_notified = False  # allow popup on student dashboard
     cert.save()
 
     # Save log
@@ -633,9 +679,7 @@ def registrar_dashboard(request):
     recent_activity = sorted(recent_activity, key=lambda x: x["time"], reverse=True)[:5]
 
     # Live student records (ADMIN ONLY)
-    # ===============================
     # Live student records (Admin / Registrar)
-    # ===============================
     students = None
 
     if user.is_staff or user.is_superuser:
@@ -1272,3 +1316,16 @@ def export_processing_performance(request):
         ])
 
     return response
+
+
+# Release notification
+def release_certificate(request, cert_id):
+    certificate = get_object_or_404(CertificateRequest, id=cert_id)
+    certificate.status = "Released"
+    certificate.approved_by = request.user
+    certificate.save()
+
+    from django.contrib import messages
+    messages.success(request, "📄 Your certificate request has been released!")
+
+    return redirect("student_dashboard")

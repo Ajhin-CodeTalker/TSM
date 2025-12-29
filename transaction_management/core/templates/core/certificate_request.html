@@ -189,7 +189,6 @@
       <button type="submit" class="submit-btn">Submit Request</button>
     </form>
   </div>
-
 </div>
 
 <script>
@@ -199,20 +198,27 @@
 
   function closePopup() {
     document.getElementById("successPopup").style.display = "none";
-    // Hide the success message after the popup is closed
-    document.querySelector('.success-message').style.display = "none";
-    // Reset the form fields after success
+    if (document.querySelector('.success-message')) {
+      document.querySelector('.success-message').style.display = "none";
+    }
     document.getElementById("certificateForm").reset();
   }
 
-  // Show the popup and success message only if success is true
-  window.onload = function() {
-    // Hide success message if it's displayed
+  // 🔒 ONLY CHANGE: enforce browser-level required validation
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("certificateForm");
+    const fields = form.querySelectorAll("input, select, textarea");
+
+    fields.forEach(field => {
+      if (field.type !== "hidden" && field.type !== "submit") {
+        field.setAttribute("required", "required");
+      }
+    });
+
     if (document.querySelector('.success-message')) {
-      document.querySelector('.success-message').style.display = 'block';
-      showPopup(); // Display the popup
+      showPopup();
     }
-  };
+  });
 </script>
 
 {% endblock %}

@@ -47,6 +47,14 @@
 </head>
 
 <body>
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert" style="background:#def1d8; color:#1a5d1a; padding:10px; border-radius:6px; margin-bottom:10px;">
+        {{ message }}
+        </div>
+    {% endfor %}
+    {% endif %}
+
 <div class="container">
     <div class="header">
         <h2 class="text-2xl font-semibold text-gray-800 mb-1">Welcome, {{ user.first_name }}!</h2>
@@ -71,6 +79,7 @@
         <div class="card"><h4>Certificates</h4><p>{{ certificates.count }} total</p></div>
         <div class="card"><h4>Profile</h4><p>{{ profile.course }} - {{ profile.year_level }}</p></div>
     </div>
+
 
     <!-- ====================== APPOINTMENTS ====================== -->
     <div class="bg-white shadow-lg rounded-xl p-6 mt-8">
@@ -135,65 +144,88 @@
     </div>
 
 
-    <!-- ====================== CERTIFICATES ====================== -->
-    <div class="bg-white shadow-lg rounded-xl p-6 mt-10">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-1">Certificate Requests</h2>
-        <p class="text-gray-500 text-sm mb-5">View and track your certificate requests.</p>
+    <!--  CERTIFICATES  -->
+<div class="bg-white shadow-lg rounded-xl p-6 mt-10">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-1">Certificate Requests</h2>
+    <p class="text-gray-500 text-sm mb-5">View and track your certificate requests.</p>
 
-        <div class="overflow-x-auto rounded-lg border border-gray-200" style="max-height: 400px; overflow-y: auto;">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-100 border-b">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Type</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Purpose</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Approved By</th>
-                </tr>
-                </thead>
-                <tbody class="divide-y">
-                {% for c in cert_page_obj %}
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="px-4 py-3">{{ c.certificate_type }}</td>
-                    <td class="px-4 py-3">{{ c.purpose }}</td>
-                    <td class="px-4 py-3">
-                        {% if c.status == "Pending" %}
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pending</span>
-                        {% elif c.status == "Approved" %}
-                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Approved</span>
-                        {% elif c.status == "Released" %}
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Released</span>
-                        {% elif c.status == "Declined" %}
-                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Declined</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-4 py-3">{% if c.approved_by %}{{ c.approved_by.first_name }} {{ c.approved_by.last_name }}{% else %}—{% endif %}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" class="text-center py-6 text-gray-500">No certificate requests yet.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- ⭐ FIXED PAGINATION variable / Styled -->
-        <div class="flex justify-between items-center mt-4">
-            {% if cert_page_obj.has_previous %}
-                <a href="?cert_page={{ cert_page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Previous</a>
-            {% else %}
-                <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Previous</span>
-            {% endif %}
-
-            <span class="text-gray-600">Page {{ cert_page_obj.number }} of {{ cert_page_obj.paginator.num_pages }}</span>
-
-            {% if cert_page_obj.has_next %}
-                <a href="?cert_page={{ cert_page_obj.next_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Next</a>
-            {% else %}
-                <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Next</span>
-            {% endif %}
-        </div>
-
-        <a href="{% url 'core:certificate_request' %}" class="btn mt-3 inline-block">Request Certificate</a>
+    <div class="overflow-x-auto rounded-lg border border-gray-200" style="max-height: 400px; overflow-y: auto;">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 border-b">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Requested Date</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Requested Time</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Type</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Purpose</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Approved By</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y">
+            {% for c in cert_page_obj %}
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-4 py-3">
+                    {{ c.requested_at|date:"M d, Y" }}
+                </td>
+                <td class="px-4 py-3">
+                    {{ c.requested_at|time:"h:i A" }}
+                </td>
+                <td class="px-4 py-3">{{ c.certificate_type }}</td>
+                <td class="px-4 py-3">{{ c.purpose }}</td>
+                <td class="px-4 py-3">
+                    {% if c.status == "Pending" %}
+                    <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pending</span>
+                    {% elif c.status == "Approved" %}
+                    <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Approved</span>
+                    {% elif c.status == "Released" %}
+                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">Released</span>
+                    {% elif c.status == "Declined" %}
+                    <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Declined</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    {% if c.approved_by %}
+                        {{ c.approved_by.first_name }} {{ c.approved_by.last_name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center py-6 text-gray-500">
+                    No certificate requests yet.
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <!-- Pagination (UNCHANGED) -->
+    <div class="flex justify-between items-center mt-4">
+        {% if cert_page_obj.has_previous %}
+            <a href="?cert_page={{ cert_page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Previous</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Previous</span>
+        {% endif %}
+
+        <span class="text-gray-600">
+            Page {{ cert_page_obj.number }} of {{ cert_page_obj.paginator.num_pages }}
+        </span>
+
+        {% if cert_page_obj.has_next %}
+            <a href="?cert_page={{ cert_page_obj.next_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Next</a>
+        {% else %}
+            <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">Next</span>
+        {% endif %}
+    </div>
+
+    <a href="{% url 'core:certificate_request' %}" class="btn mt-3 inline-block">
+        Request Certificate
+    </a>
+</div>
+
 
 </div>
 
@@ -206,5 +238,36 @@ logoutBtn.addEventListener('click', (e) => {
 });
 </script>
 
+{% if show_popup %}
+<div id="popupModal"
+     class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-96 text-center animate-fadeIn">
+        <h3 class="text-xl font-semibold text-green-700 mb-3">🎉 Certificate Ready for Pickup!</h3>
+        
+        {% for c in released_certs %}
+            <div class="text-gray-700 text-sm mb-3 border-b pb-2">
+                📎 <strong>{{ c.get_certificate_type_display }}</strong><br>
+
+                📝 <span class="text-gray-600 text-xs">
+                    Requested: {{ c.requested_at|date:"M d, Y — h:i A" }}
+                </span><br>
+
+                📅 Pickup: {{ c.requested_at|date:"M d, Y" }} — 🕒 {{ c.requested_at|time:"H:i" }}
+            </div>
+        {% endfor %}
+        
+        <button onclick="closePopup()"
+                class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            OK, Got it
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<script>
+function closePopup(){
+    document.getElementById("popupModal").style.display = "none";
+}
+</script>
 </body>
 </html>
